@@ -261,7 +261,7 @@ function fmtSize(b){if(b<1024)return b+" B";if(b<1048576)return(b/1024).toFixed(
 const TEXT_EXT=/\.(txt|md|csv|log)$/i,DOC_EXT=/\.(doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z)$/i,PDF_RE=/\.pdf$/i,IMG_RE=/\.(png|jpe?g|webp|gif|bmp|svg)$/i;
 function fileIcon(n){if(/\.docx?$/i.test(n))return"📄";if(/\.xlsx?$/i.test(n))return"📊";if(/\.pptx?$/i.test(n))return"📽";if(PDF_RE.test(n))return"📕";if(IMG_RE.test(n))return"🖼";return"📎";}
 function fileIconClass(n){if(/\.(docx?|xlsx?|pptx?)$/i.test(n))return"doc";if(PDF_RE.test(n))return"pdf";if(IMG_RE.test(n))return"img";return"doc";}
-function fmtStep(text,q){let s=esc(text);s=s.replace(/`([^`]+)`/g,'<code>$1</code>');s=s.replace(/(https?:\/\/[^\s<"']+)/g,'<a class="auto-link" href="$1" target="_blank" rel="noopener">$1</a>');if(q){const terms=q.split(/\s+/).filter(Boolean).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));if(terms.length)s=s.replace(new RegExp("("+terms.join("|")+")","gi"),"<mark>$1</mark>");}return s;}
+function fmtStep(text,q){let s=esc(text);s=s.replace(/\n/g,'<br>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');s=s.replace(/(https?:\/\/[^\s<"']+)/g,'<a class="auto-link" href="$1" target="_blank" rel="noopener">$1</a>');if(q){const terms=q.split(/\s+/).filter(Boolean).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));if(terms.length)s=s.replace(new RegExp("("+terms.join("|")+")","gi"),"<mark>$1</mark>");}return s;}
 function updateUserUI(){const av=$("#userAvatar"),un=$("#userName");if(myName){av.textContent=myName.charAt(0).toUpperCase();un.textContent=myName;}else{av.textContent="?";un.textContent="Set your name";}}
 function showWelcome(){$("#welcomeModal").classList.remove("hidden");$("#modal-name").focus();}
 function hideWelcome(){$("#welcomeModal").classList.add("hidden");}
@@ -321,7 +321,7 @@ const CATEGORIES=["Active Directory","Email / Exchange","Networking","VPN / Remo
 function buildCatFilters(){const used=new Set(playbooks.map(p=>p.category).filter(Boolean));const bar=$("#filterBar");bar.querySelectorAll("[data-cat]").forEach(el=>el.remove());const ref=bar.querySelector("[data-status]");const lbl=bar.querySelector(".filter-label");const a=document.createElement("button");a.className="filter-chip"+(filterCat===""?" active":"");a.dataset.cat="";a.textContent="All";if(lbl&&lbl.nextSibling)bar.insertBefore(a,lbl.nextSibling);else bar.insertBefore(a,ref);CATEGORIES.filter(c=>used.has(c)).forEach(c=>{const ch=document.createElement("button");ch.className="filter-chip"+(filterCat===c?" active":"");ch.dataset.cat=c;ch.textContent=c;bar.insertBefore(ch,ref);});}
 
 // ===== AI =====
-const SYSTEM='You are Smart Assist. Take messy IT notes and return ONLY raw JSON: {"title":string,"summary":string,"tags":string[],"tools":string[],"prerequisites":string[],"steps":string[],"warnings":string[],"category":string,"estTime":string}. Reorganize only what is provided. Do NOT invent. Wrap commands in backticks. category from: Active Directory, Email / Exchange, Networking, VPN / Remote Access, Printers, Hardware, Software, Security, Onboarding / Offboarding, Cloud / SaaS, Phones / Mobile, Other. estTime from: < 5 min, 5-15 min, 15-30 min, 30-60 min, 1+ hour.';
+const SYSTEM='You are Smart Assist. Take messy IT notes and return ONLY raw JSON: {"title":string,"summary":string,"tags":string[],"tools":string[],"prerequisites":string[],"steps":string[],"warnings":string[],"category":string,"estTime":string}. Reorganize only what is provided. Do NOT invent. Wrap commands in backticks. Each step is one main action. If a step has sub-details, options, or bullet points, include them INSIDE that step string using newline characters (\\n) with bullet markers like "\\n  • sub-item". Do NOT make sub-bullets into separate numbered steps. category from: Active Directory, Email / Exchange, Networking, VPN / Remote Access, Printers, Hardware, Software, Security, Onboarding / Offboarding, Cloud / SaaS, Phones / Mobile, Other. estTime from: < 5 min, 5-15 min, 15-30 min, 30-60 min, 1+ hour.';
 async function callAI({title,tags,notes,aiFile}){const content=[];if(aiFile?.kind==="pdf")content.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:aiFile.data}});if(aiFile?.kind==="image")content.push({type:"image",source:{type:"base64",media_type:aiFile.mediaType,data:aiFile.data}});content.push({type:"text",text:"Title: "+(title||"(none)")+"\nTags: "+(tags||"(none)")+"\nNotes:\n"+(notes||"(see attachment)")});if(!apiKey)throw new Error("no-key");const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:2000,system:SYSTEM,messages:[{role:"user",content}]})});const d=await r.json();if(d.error)throw new Error(d.error.message);let t=(d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();t=t.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();const a=t.indexOf("{"),b=t.lastIndexOf("}");if(a>=0&&b>a)t=t.slice(a,b+1);const o=JSON.parse(t);const arr=v=>Array.isArray(v)?v.filter(x=>String(x||"").trim()):[];return{title:(o.title||"").trim()||"Untitled ticket",summary:(o.summary||"").trim(),tags:arr(o.tags).map(t=>t.toLowerCase().trim()),tools:arr(o.tools),prerequisites:arr(o.prerequisites),steps:arr(o.steps),warnings:arr(o.warnings),category:(o.category||"").trim(),estTime:(o.estTime||"").trim()};}
 
 // ===== FILE HANDLING =====
@@ -342,7 +342,23 @@ else{pb.id=uid();pb.createdAt=now;pb.updatedAt=now;pb.views=0;pb.copies=0;pb.ver
 await loadTickets();resetForm();setView("browse");}catch(e){showMsg("Error saving: "+e.message,"err");}
 }
 async function doAssist(){const{title,tags,notes}=collect();if(!notes&&!aiFile){showMsg("Add notes or a file first.","err");return;}const btn=$("#assistBtn"),orig=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spin"></span>Assembling…';showMsg("","");try{const out=await callAI({title,tags,notes,aiFile});const tl=out.tags.length?out.tags:tags.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean);if(out.category&&!collect().category)$("#f-category").value=out.category;if(out.estTime&&!collect().estTime)$("#f-est").value=out.estTime;await commit({...out,tags:tl,aiCleaned:true});}catch(e){if(e.message==="no-key"){showMsg("Smart Assist needs an API key. Open the 🔑 section above.","err");$("#keybox").open=true;}else showMsg("Error: "+e.message+'. Try "Add as-is".',"err");}finally{btn.disabled=false;btn.innerHTML=orig;}}
-async function doPlain(){const{title,tags,notes}=collect();if(!title&&!notes&&!pendingAttach.length){showMsg("Add a title, notes, or file first.","err");return;}const steps=notes?notes.split(/\r?\n/).map(l=>l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/,"").trim()).filter(Boolean):[];await commit({title:title||"Untitled ticket",summary:"",tags:tags.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean),tools:[],prerequisites:[],steps:steps.length>1?steps:[],warnings:[],aiCleaned:false,category:collect().category,estTime:collect().estTime});}
+async function doPlain(){const{title,tags,notes}=collect();if(!title&&!notes&&!pendingAttach.length){showMsg("Add a title, notes, or file first.","err");return;}
+const steps=[];
+if(notes){const lines=notes.split(/\r?\n/);
+lines.forEach(line=>{
+  const raw=line;const trimmed=line.trim();if(!trimmed)return;
+  const isIndented=/^\s{2,}/.test(raw)||/^\t/.test(raw);
+  const isBullet=/^\s*[-*•►▸‣]/.test(raw)&&!/^\s*[-*•]\s*$/.test(raw);
+  const isNumbered=/^\s*\d+[.)]\s/.test(raw);
+  const cleaned=trimmed.replace(/^\s*(?:\d+[.)]|[-*•►▸‣])\s*/,"").trim();
+  if(!cleaned)return;
+  if((isIndented||isBullet)&&!isNumbered&&steps.length>0){
+    steps[steps.length-1]+="\n  • "+cleaned;
+  }else{
+    steps.push(cleaned);
+  }
+});}
+await commit({title:title||"Untitled ticket",summary:"",tags:tags.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean),tools:[],prerequisites:[],steps:steps.length>1?steps:[],warnings:[],aiCleaned:false,category:collect().category,estTime:collect().estTime});}
 function startEdit(id){const p=playbooks.find(x=>x.id===id);if(!p)return;editingId=id;$("#f-title").value=p.title==="Untitled ticket"?"":p.title;$("#f-tags").value=(p.tags||[]).join(", ");$("#f-notes").value=p.rawNotes||[p.summary,...(p.steps||[])].filter(Boolean).join("\n");$("#f-category").value=p.category||"";$("#f-est").value=p.estTime||"";$("#f-status").value=p.status||"draft";$("#f-related").value=(p.relatedTitles||[]).join(", ");pendingAttach=(p.attachments||[]).map(a=>({...a,aiReadable:false}));aiFile=null;renderAttachChips();$("#assistBtn").innerHTML="⚡ Re-run Smart Assist";$("#plainBtn").textContent="Save changes";$("#cancelEdit").hidden=false;setView("create");$("#f-title").focus();}
 function stopEdit(){editingId=null;$("#cancelEdit").hidden=true;}
 function resetForm(){$("#f-title").value="";$("#f-tags").value="";$("#f-notes").value="";$("#f-category").value="";$("#f-est").value="";$("#f-status").value="draft";$("#f-related").value="";clearAllAttach();$("#assistBtn").innerHTML="⚡ Smart Assist";$("#plainBtn").textContent="Add as-is";}
@@ -423,6 +439,10 @@ $("#list").addEventListener("keydown",handleListKeydown);
 $("#mineList").addEventListener("click",handleListClick);
 $("#mineList").addEventListener("keydown",handleListKeydown);
 
+load();
+</script>
+</body>
+</html>
 load();
 </script>
 </body>
