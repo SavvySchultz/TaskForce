@@ -84,7 +84,12 @@ function dbReady() { return !!pool; }
 
 // --- API Routes ---
 
-// Health check / DB status
+// Health check for Reactor
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// DB status for frontend
 app.get('/api/status', async (req, res) => {
   if (!dbReady()) return res.json({ db: false, message: 'Database not connected' });
   try {
@@ -247,7 +252,7 @@ function safeJSON(val, fallback) {
 }
 
 // --- Start ---
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 initDB().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`TaskForce running on port ${PORT}`);
