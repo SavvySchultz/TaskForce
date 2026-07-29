@@ -23,12 +23,37 @@
   .share-pill{font-family:"Space Mono";font-size:11px;font-weight:700;letter-spacing:.3px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);color:var(--muted);background:var(--panel);display:inline-flex;align-items:center;gap:7px}
   .share-pill.on{color:#7ee0a6;border-color:rgba(126,224,166,.55)}
 
-  .tabs{display:flex;gap:6px;margin:26px 0 24px;border-bottom:1.5px solid var(--line)}
-  .tab{font-family:"Archivo";font-weight:800;font-size:15px;letter-spacing:.3px;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;padding:12px 18px;margin-bottom:-1.5px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:9px}
+  /* user identity button */
+  .user-btn{font-family:"Archivo";font-weight:700;font-size:13px;color:var(--gold);background:var(--panel);border:1.5px solid rgba(255,201,77,.4);padding:9px 14px;border-radius:10px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px;max-width:200px;overflow:hidden}
+  .user-btn:hover{border-color:var(--gold);transform:translateY(-1px)}
+  .user-btn .avatar{width:26px;height:26px;border-radius:7px;background:var(--gold);color:#241a00;font-family:"Bungee";font-size:12px;display:grid;place-items:center;flex:none}
+  .user-btn .uname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* welcome modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(5,8,18,.85);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+  .modal-overlay.hidden{display:none}
+  .modal{background:var(--panel);border:1.5px solid var(--line);border-radius:18px;padding:32px 28px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+  .modal h2{font-family:"Archivo";font-weight:900;font-size:22px;margin:0 0 6px;text-align:center}
+  .modal h2 .wave{font-size:28px}
+  .modal .sub{color:var(--muted);font-size:14px;text-align:center;margin:0 0 22px;line-height:1.5}
+  .modal label{display:block;font-family:"Archivo";font-weight:700;font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .modal input{width:100%;background:var(--panel-2);border:1.5px solid var(--gold);color:var(--ink);font-family:"Inter";font-size:16px;padding:14px;border-radius:10px;outline:none;transition:.15s;text-align:center}
+  .modal input::placeholder{color:#5f6d94}
+  .modal input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,201,77,.2)}
+  .modal .modal-cta{width:100%;font-family:"Archivo";font-weight:900;font-size:16px;color:#10161f;background:var(--gold);border:none;padding:14px;border-radius:11px;cursor:pointer;transition:.15s;margin-top:16px;box-shadow:0 5px 0 #b9902b}
+  .modal .modal-cta:hover{transform:translateY(-1px);box-shadow:0 6px 0 #b9902b}
+  .modal .modal-cta:active{transform:translateY(3px);box-shadow:0 2px 0 #b9902b}
+  .modal .modal-cta:disabled{opacity:.5;cursor:not-allowed}
+  .modal .modal-skip{display:block;margin:14px auto 0;background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;text-decoration:underline}
+  .modal .modal-skip:hover{color:var(--ink)}
+
+  .tabs{display:flex;gap:6px;margin:26px 0 24px;border-bottom:1.5px solid var(--line);overflow-x:auto}
+  .tab{font-family:"Archivo";font-weight:800;font-size:15px;letter-spacing:.3px;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;padding:12px 18px;margin-bottom:-1.5px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
   .tab:hover{color:var(--ink)}
   .tab.active{color:var(--ink);border-bottom-color:var(--signal)}
   .tab-count{font-family:"Space Mono";font-size:11px;font-weight:700;color:var(--bg-deep);background:var(--beacon);border-radius:20px;padding:1px 8px}
   .tab.active .tab-count{background:var(--signal)}
+  .tab.mine .tab-count{background:var(--gold);color:#241a00}
   .view{display:none}.view.active{display:block}
   .create-wrap{max-width:660px;margin:0 auto}
 
@@ -73,7 +98,6 @@
   .drop:hover,.drop.over{border-color:var(--beacon);color:var(--beacon);background:rgba(61,169,252,.07)}
   .drop b{color:var(--ink)}
 
-  /* attachment chips (form) */
   .attach-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
   .chip-attach{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1.5px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13px}
   .chip-attach.ai-readable{border-color:var(--beacon)}
@@ -85,7 +109,6 @@
   .chip-attach .x{margin-left:auto;cursor:pointer;color:var(--muted);font-weight:700;border:none;background:none;font-size:16px;flex:none}
   .chip-attach .x:hover{color:var(--signal)}
 
-  /* attachments in ticket view */
   .attach-block{display:flex;flex-direction:column;gap:8px}
   .attach-card{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:10px 12px;transition:.15s}
   .attach-card:hover{border-color:var(--beacon)}
@@ -154,8 +177,7 @@
 
   .meta{font-family:"Space Mono";font-size:10.5px;color:#5f6d94;margin-top:9px;letter-spacing:.4px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}
   .meta .by{color:var(--gold)}.meta .cc{color:var(--beacon)}
-  .meta .est{color:var(--green)}
-  .meta .views-ct{color:#5f6d94}
+  .meta .est{color:var(--green)}.meta .views-ct{color:#5f6d94}
   .caret{flex:none;color:var(--muted);font-size:13px;margin-top:6px;transition:.2s}
   .dossier.open .caret{transform:rotate(90deg);color:var(--beacon)}
   .body{display:none;margin-top:18px;padding-top:16px;border-top:1.5px solid var(--line)}
@@ -174,18 +196,28 @@
   .warn{background:rgba(255,107,74,.08);border:1px solid rgba(255,107,74,.4);border-radius:9px;padding:11px 13px}
   .warn .lab{color:var(--signal)}.warn ul{margin:0;padding-left:18px;font-size:13.5px;color:#ffcabd}.warn li{margin:2px 0}
   .raw{white-space:pre-wrap;font-family:"Space Mono";font-size:12.5px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:12px;max-height:220px;overflow:auto}
-
   .related-list{display:flex;flex-wrap:wrap;gap:8px}
   .related-link{font-family:"Archivo";font-weight:600;font-size:12.5px;color:var(--beacon);background:rgba(61,169,252,.08);border:1px solid rgba(61,169,252,.3);border-radius:8px;padding:5px 10px;cursor:pointer;transition:.15s;text-decoration:none}
   .related-link:hover{background:rgba(61,169,252,.16);border-color:var(--beacon)}
 
+  /* comments with threading */
   .comments .clist{display:flex;flex-direction:column;gap:9px;margin-bottom:12px}
-  .cmt{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .cmt{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 11px;position:relative}
+  .cmt.mine{border-color:rgba(255,201,77,.3);background:rgba(255,201,77,.04)}
+  .cmt-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .cmt-who{font-family:"Archivo";font-weight:700;font-size:12.5px;color:var(--gold)}
-  .cmt-when{font-family:"Space Mono";font-size:10px;color:#5f6d94;margin-left:8px}
+  .cmt-when{font-family:"Space Mono";font-size:10px;color:#5f6d94}
+  .cmt-reply-btn{font-family:"Archivo";font-weight:700;font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;margin-left:auto;padding:2px 6px;border-radius:5px;transition:.15s}
+  .cmt-reply-btn:hover{color:var(--beacon);background:rgba(61,169,252,.1)}
   .cmt-txt{font-size:13.5px;margin-top:3px;color:var(--ink);white-space:pre-wrap}
+  .cmt-replying-to{font-family:"Space Mono";font-size:10px;color:var(--beacon);margin-bottom:2px;display:flex;align-items:center;gap:4px}
+  .cmt-replying-to::before{content:"↳";font-size:12px}
+  .cmt-replies{margin-left:18px;padding-left:12px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:7px;margin-top:8px}
   .cmt-empty{color:var(--muted);font-size:12.5px;font-style:italic;margin-bottom:12px}
-  .crow{display:flex;gap:8px}
+  .crow{display:flex;gap:8px;align-items:center}
+  .crow-context{font-family:"Space Mono";font-size:10px;color:var(--beacon);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+  .crow-context .cancel-reply{color:var(--signal);cursor:pointer;font-weight:700;border:none;background:none;font-size:11px;padding:0}
+  .crow-context .cancel-reply:hover{text-decoration:underline}
   .cinput{flex:1;background:var(--panel-2);border:1.5px solid var(--line);color:var(--ink);font-family:"Inter";font-size:13.5px;padding:9px 11px;border-radius:9px;outline:none}
   .cinput:focus{border-color:var(--beacon);box-shadow:0 0 0 3px rgba(61,169,252,.14)}
   .csend{white-space:nowrap}
@@ -208,36 +240,39 @@
   @media print{
     body{background:#fff!important;color:#111!important}
     .wrap{padding:10px}
-    .hq-bar,.tabs,.command-bar,.filter-bar,.watch-head,.footnote,.toast,.doss-tools,.comments,.caret,.intake-actions,.keybox,.drop,.chip-attach,.msg,.sort-select,.attach-list{display:none!important}
-    .view{display:block!important}
-    #view-create{display:none!important}
-    .dossier,.panel{background:#fff!important;border:1px solid #ccc!important;break-inside:avoid;page-break-inside:avoid}
-    .dossier::after{display:none}
-    .body{display:block!important}
+    .hq-bar,.tabs,.command-bar,.filter-bar,.watch-head,.footnote,.toast,.doss-tools,.comments,.caret,.intake-actions,.keybox,.drop,.chip-attach,.msg,.sort-select,.attach-list,.modal-overlay,.user-btn{display:none!important}
+    .view{display:block!important}#view-create{display:none!important}
+    .dossier,.panel{background:#fff!important;border:1px solid #ccc!important;break-inside:avoid}
+    .dossier::after{display:none}.body{display:block!important}
     .num{background:#eee!important;color:#333!important;box-shadow:none!important}
     .steps li::before{background:#ddd!important;color:#333!important}
-    .tag{border:1px solid #999!important;color:#333!important;background:#f5f5f5!important}
-    .status-badge{border:1px solid #999!important}
+    .tag,.status-badge{border:1px solid #999!important;color:#333!important;background:#f5f5f5!important}
     .status-badge.s-verified{color:#1a7a3a!important}
-    .status-badge.s-needs-review{color:#8a6d00!important}
-    .status-badge.s-draft{color:#666!important}
-    .meta,.summary,.muted{color:#666!important}
+    .meta,.summary{color:#666!important}
     .steps li code{background:#f0f0f0!important;border:1px solid #ccc!important;color:#333!important}
     a.auto-link{color:#0066cc!important}
-    .warn{background:#fff5f0!important;border:1px solid #cc6644!important}
-    .warn ul{color:#663322!important}
+    .warn{background:#fff5f0!important;border:1px solid #cc6644!important}.warn ul{color:#663322!important}
     .inline-list li{background:#f5f5f5!important;border:1px solid #ccc!important;color:#333!important}
-    .related-link{color:#0066cc!important;background:#f0f5ff!important;border:1px solid #99c!important}
     .attach-card{background:#f9f9f9!important;border:1px solid #ccc!important}
-    .attach-card .a-dl{color:#0066cc!important;border:1px solid #99c!important}
-    h3,h2{color:#111!important}
-    .doss-title h3 mark{background:#ff9!important;color:#111!important}
-    .ai-pill{display:none!important}
+    h3,h2{color:#111!important}.ai-pill{display:none!important}
     .raw{color:#333!important;background:#f9f9f9!important;border:1px solid #ccc!important}
   }
 </style>
 </head>
 <body>
+
+<!-- Welcome modal -->
+<div class="modal-overlay hidden" id="welcomeModal">
+  <div class="modal">
+    <h2><span class="wave">👋</span> Welcome to TaskForce</h2>
+    <p class="sub">Set your name so your team knows who created tickets and posted comments. You can change it anytime from the header.</p>
+    <label>Your name</label>
+    <input type="text" id="modal-name" placeholder="e.g. Alex Rivera" autocomplete="off">
+    <button class="modal-cta" id="modal-save" disabled>Let's go</button>
+    <button class="modal-skip" id="modal-skip">Skip for now</button>
+  </div>
+</div>
+
 <div class="wrap">
   <header class="hq-bar">
     <div class="brand">
@@ -249,6 +284,7 @@
       <div class="tagline">// The IT Support Hero Manual</div>
     </div>
     <div class="hq-actions">
+      <button class="user-btn" id="userBtn"><span class="avatar" id="userAvatar">?</span><span class="uname" id="userName">Set your name</span></button>
       <span class="share-pill" id="sharePill">● Solo (this device)</span>
       <button class="badge-btn" id="importBtn">⬆ Import</button>
       <button class="badge-btn" id="exportBtn">⬇ Export</button>
@@ -259,18 +295,19 @@
 
   <nav class="tabs">
     <button class="tab" id="tab-create" data-view="create">⚡ New ticket</button>
-    <button class="tab active" id="tab-browse" data-view="browse">📖 Browse tickets <span class="tab-count" id="tabCount">0</span></button>
+    <button class="tab active" id="tab-browse" data-view="browse">📖 All tickets <span class="tab-count" id="tabCount">0</span></button>
+    <button class="tab mine" id="tab-mine" data-view="mine">👤 My tickets <span class="tab-count" id="mineCount">0</span></button>
   </nav>
 
   <section class="view" id="view-create">
     <div class="create-wrap">
       <div class="intake panel">
         <h2><span class="zap">⚡</span> New ticket</h2>
-        <p class="hint">Drop in raw notes or files — <b>Smart Assist</b> suits it up into clean, numbered steps. Documents (Word, Excel, PDF) are saved as downloadable links on the ticket. Notes get organized separately.</p>
+        <p class="hint">Drop in raw notes or files — <b>Smart Assist</b> suits it up into clean, numbered steps. Documents (Word, Excel, PDF) are saved as downloadable links on the ticket.</p>
 
         <details class="keybox fb" id="fbbox">
           <summary>🌐 Team sharing — connect a free database so everyone shares tickets &amp; comments</summary>
-          <p class="keyhint">Paste your Firebase config to keep all tickets and comments in one shared place. Every copy of the app using the same config — downloaded or hosted — shows the same data, live. The config is safe to share (it isn't a secret; access is set by your Firestore rules). Steps: make a free project at <code>console.firebase.google.com</code>, add <b>Firestore Database</b>, register a <b>Web app</b>, copy its config object, and paste it below.</p>
+          <p class="keyhint">Paste your Firebase config to keep all tickets and comments in one shared place. Steps: make a free project at <code>console.firebase.google.com</code>, add <b>Firestore Database</b>, register a <b>Web app</b>, copy its config object, and paste it below.</p>
           <textarea id="f-fb" placeholder="Paste the firebaseConfig { ... } object here"></textarea>
           <div class="keyrow"><button class="ghost" id="connectFb">Connect team database</button></div>
           <div class="keystate" id="fbState"></div>
@@ -278,15 +315,11 @@
 
         <details class="keybox" id="keybox">
           <summary>🔑 AI key — only needed when running the downloaded file</summary>
-          <p class="keyhint">Smart Assist runs free while the app is open <b>inside Claude</b>. In a downloaded or hosted copy it needs your own Anthropic API key, stored only in <b>this</b> browser and sent straight to Anthropic — use your <b>own</b> key, not a shared one. Get one at <code>console.anthropic.com</code>; usage bills to that account.</p>
+          <p class="keyhint">Smart Assist runs free while the app is open <b>inside Claude</b>. In a downloaded or hosted copy it needs your own Anthropic API key. Get one at <code>console.anthropic.com</code>.</p>
           <div class="keyrow"><input type="password" id="f-key" placeholder="sk-ant-…" autocomplete="off"><button class="ghost" id="saveKey">Save</button></div>
           <div class="keystate" id="keyState"></div>
         </details>
 
-        <div class="name-field">
-          <label>Your name <span>(goes on the ticket &amp; your comments)</span></label>
-          <input type="text" id="f-author" placeholder="e.g. Alex Rivera">
-        </div>
         <label>Ticket title <span>(optional — Smart Assist can name it)</span></label>
         <input type="text" id="f-title" placeholder="e.g. Reset a locked AD account">
 
@@ -310,7 +343,7 @@
             </select>
           </div>
           <div>
-            <label>Est. time <span>(how long it takes)</span></label>
+            <label>Est. time</label>
             <select class="field-select" id="f-est">
               <option value="">— pick one —</option>
               <option value="< 5 min">< 5 min</option>
@@ -331,17 +364,15 @@
 
         <label>Tags <span>(comma separated)</span></label>
         <input type="text" id="f-tags" placeholder="active directory, accounts, password">
-
         <label>Related tickets <span>(comma-separated titles or search terms)</span></label>
         <input type="text" id="f-related" placeholder="e.g. VPN setup, reset MFA">
+        <label>Notes <span>(your how-to steps or context)</span></label>
+        <textarea id="f-notes" placeholder="Paste raw notes — full sentences, a messy bullet list, a Teams message. Smart Assist will organize these into clean steps."></textarea>
 
-        <label>Notes <span>(optional — your how-to steps, raw instructions, or context)</span></label>
-        <textarea id="f-notes" placeholder="Paste raw notes — full sentences, a messy bullet list, a Teams message, whatever you've got. Smart Assist will organize these into clean steps."></textarea>
-
-        <label>Attach files <span>(documents become downloadable links · PDFs &amp; screenshots are also read by Smart Assist)</span></label>
+        <label>Attach files <span>(documents become downloadable links · PDFs &amp; screenshots are read by Smart Assist)</span></label>
         <div class="drop" id="drop">
           <input type="file" id="f-file" accept=".txt,.md,.csv,.log,.pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,image/*" multiple hidden>
-          📎 <b>Click or drop files.</b> Word, Excel, PowerPoint, PDF, images, text — add as many as you need.
+          📎 <b>Click or drop files.</b> Word, Excel, PowerPoint, PDF, images, text.
         </div>
         <div class="attach-list" id="attachList"></div>
 
@@ -375,6 +406,12 @@
     <div id="list"></div>
   </section>
 
+  <!-- My Tickets uses the same list renderer but filtered -->
+  <section class="view" id="view-mine">
+    <div class="watch-head"><h2>My Tickets <span id="mineScope"></span></h2><span class="count" id="mineTotal">0 tickets</span></div>
+    <div id="mineList"></div>
+  </section>
+
   <div class="footnote">Smart Assist reorganizes what you give it — it does not invent facts. Always sanity-check before running steps in production.</div>
 </div>
 <div class="toast" id="toast"></div>
@@ -385,54 +422,34 @@ let playbooks=[],query="",editingId=null,view="browse",apiKey="",myName="";
 let backend="local",db=null,fs=null,fbConfig=null;
 let openIds=new Set();
 let filterCat="",filterStatus="",sortMode="newest";
-
-// pending attachments for the form (multiple files)
-let pendingAttach=[];
-// which of those are AI-readable (pdf/image) — index into pendingAttach
-let aiFile=null;
+let pendingAttach=[],aiFile=null;
+// per-ticket reply state: {ticketId: {replyTo: commentId, replyAuthor: name}}
+let replyState={};
 
 const CATEGORIES=["Active Directory","Email / Exchange","Networking","VPN / Remote Access","Printers","Hardware","Software","Security","Onboarding / Offboarding","Cloud / SaaS","Phones / Mobile","Other"];
-
 const $=s=>document.querySelector(s);
 const $$=s=>document.querySelectorAll(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function rel(ts){const d=Date.now()-ts;const m=Math.floor(d/60000);if(m<1)return"just now";if(m<60)return m+"m ago";const h=Math.floor(m/60);if(h<24)return h+"h ago";const dy=Math.floor(h/24);if(dy<7)return dy+"d ago";return new Date(ts).toLocaleDateString();}
-function toast(t,kind){const el=$("#toast");el.textContent=t;el.className="toast show"+(kind?" "+kind:"");setTimeout(()=>{el.className="toast";},3200);}
+function toast(t,kind){const el=$("#toast");el.textContent=t;el.className="toast show"+(kind?" "+kind:"");setTimeout(()=>{el.className="toast"},3200);}
 function fmtSize(bytes){if(bytes<1024)return bytes+" B";if(bytes<1048576)return(bytes/1024).toFixed(1)+" KB";return(bytes/1048576).toFixed(1)+" MB";}
+const TEXT_EXT=/\.(txt|md|csv|log)$/i,DOC_EXT=/\.(doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z)$/i,PDF_RE=/\.pdf$/i,IMG_RE=/\.(png|jpe?g|webp|gif|bmp|svg)$/i;
+function fileIcon(n){if(/\.docx?$/i.test(n))return"📄";if(/\.xlsx?$/i.test(n))return"📊";if(/\.pptx?$/i.test(n))return"📽";if(PDF_RE.test(n))return"📕";if(IMG_RE.test(n))return"🖼";if(/\.(zip|rar|7z)$/i.test(n))return"📦";return"📎";}
+function fileIconClass(n){if(/\.docx?$/i.test(n)||/\.xlsx?$/i.test(n)||/\.pptx?$/i.test(n))return"doc";if(PDF_RE.test(n))return"pdf";if(IMG_RE.test(n))return"img";return"doc";}
+function fmtStep(text,q){let s=esc(text);s=s.replace(/`([^`]+)`/g,'<code>$1</code>');s=s.replace(/(https?:\/\/[^\s<"']+)/g,'<a class="auto-link" href="$1" target="_blank" rel="noopener">$1</a>');s=s.replace(/(?:^|\s)((?:[A-Z]:\\|\\\\|\/(?:usr|etc|var|home|mnt|opt|tmp|root|srv))[^\s<"']*)/gi,(m,p)=>m.replace(p,'<code>'+p+'</code>'));if(q){const terms=q.split(/\s+/).filter(Boolean).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));if(terms.length)s=s.replace(new RegExp("("+terms.join("|")+")","gi"),"<mark>$1</mark>");}return s;}
 
-/* file type helpers */
-const TEXT_EXT=/\.(txt|md|csv|log)$/i;
-const DOC_EXT=/\.(doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z)$/i;
-const PDF_RE=/\.pdf$/i;
-const IMG_RE=/\.(png|jpe?g|webp|gif|bmp|svg)$/i;
-
-function fileIcon(name){
-  if(/\.docx?$/i.test(name))return"📄";
-  if(/\.xlsx?$/i.test(name))return"📊";
-  if(/\.pptx?$/i.test(name))return"📽";
-  if(PDF_RE.test(name))return"📕";
-  if(IMG_RE.test(name))return"🖼";
-  if(/\.(zip|rar|7z)$/i.test(name))return"📦";
-  return"📎";
+/* ---------- user identity ---------- */
+function updateUserUI(){
+  const btn=$("#userBtn"),av=$("#userAvatar"),un=$("#userName");
+  if(myName){av.textContent=myName.charAt(0).toUpperCase();un.textContent=myName;}
+  else{av.textContent="?";un.textContent="Set your name";}
 }
-function fileIconClass(name){
-  if(/\.docx?$/i.test(name)||/\.xlsx?$/i.test(name)||/\.pptx?$/i.test(name))return"doc";
-  if(PDF_RE.test(name))return"pdf";
-  if(IMG_RE.test(name))return"img";
-  return"doc";
-}
-
-/* ---------- rich text in steps ---------- */
-function fmtStep(text,q){
-  let s=esc(text);
-  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
-  s=s.replace(/(https?:\/\/[^\s<"']+)/g,'<a class="auto-link" href="$1" target="_blank" rel="noopener">$1</a>');
-  s=s.replace(/(?:^|\s)((?:[A-Z]:\\|\\\\|\/(?:usr|etc|var|home|mnt|opt|tmp|root|srv))[^\s<"']*)/gi,(m,p)=>{
-    return m.replace(p,'<code>'+p+'</code>');
-  });
-  if(q){const terms=q.split(/\s+/).filter(Boolean).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));if(terms.length)s=s.replace(new RegExp("("+terms.join("|")+")","gi"),"<mark>$1</mark>");}
-  return s;
+function showWelcome(){$("#welcomeModal").classList.remove("hidden");$("#modal-name").focus();}
+function hideWelcome(){$("#welcomeModal").classList.add("hidden");}
+function requireName(){
+  if(myName)return myName;
+  showWelcome();return null;
 }
 
 /* ---------- storage ---------- */
@@ -443,80 +460,39 @@ async function storeDel(k){if(hasCloud){try{await window.storage.delete(k,false)
 
 async function load(){
   const m=await storeGet(ME);if(m){try{myName=JSON.parse(m).name||"";}catch(e){}}
-  if(myName)$("#f-author").value=myName;
+  updateUserUI();
   apiKey=(await storeGet(KKEY))||"";reflectKeyState();
-  const fb=await storeGet(FBKEY);
-  if(fb){try{fbConfig=JSON.parse(fb);}catch(e){fbConfig=null;}}
+  const fb=await storeGet(FBKEY);if(fb){try{fbConfig=JSON.parse(fb);}catch(e){fbConfig=null;}}
   reflectFbState();
-  if(fbConfig){await connectCloud(fbConfig);}
-  if(backend!=="cloud"){const raw=await storeGet(KEY);try{playbooks=raw?JSON.parse(raw):[];}catch(e){playbooks=[];}
-    playbooks=playbooks.map(migrateTicket);
-    render();
-  }
+  if(fbConfig) await connectCloud(fbConfig);
+  if(backend!=="cloud"){const raw=await storeGet(KEY);try{playbooks=raw?JSON.parse(raw):[];}catch(e){playbooks=[];}playbooks=playbooks.map(migrateTicket);render();}
   if(!hasCloud&&!apiKey)$("#keybox").open=true;
   buildCatFilters();
+  // show welcome if no name set
+  if(!myName) setTimeout(showWelcome,600);
 }
-function migrateTicket(p){
-  return{...p,
-    status:p.status||"draft",
-    category:p.category||"",
-    estTime:p.estTime||"",
-    relatedTitles:p.relatedTitles||[],
-    views:p.views||0,
-    copies:p.copies||0,
-    verifiedAt:p.verifiedAt||0,
-    verifiedBy:p.verifiedBy||"",
-    attachments:p.attachments||[]
-  };
-}
-async function saveLocal(){const ok=await storeSet(KEY,JSON.stringify(playbooks));if(!ok)showMsg("Couldn't save — export a backup to be safe.","err");}
-async function saveName(name){await storeSet(ME,JSON.stringify({name}));}
+function migrateTicket(p){return{...p,status:p.status||"draft",category:p.category||"",estTime:p.estTime||"",relatedTitles:p.relatedTitles||[],views:p.views||0,copies:p.copies||0,verifiedAt:p.verifiedAt||0,verifiedBy:p.verifiedBy||"",attachments:p.attachments||[],comments:(p.comments||[]).map(c=>({...c,replyTo:c.replyTo||null}))};}
+async function saveLocal(){await storeSet(KEY,JSON.stringify(playbooks));}
+async function saveName(name){myName=name;await storeSet(ME,JSON.stringify({name}));updateUserUI();}
 
 /* ---------- category filter chips ---------- */
 function buildCatFilters(){
   const used=new Set(playbooks.map(p=>p.category).filter(Boolean));
-  const bar=$("#filterBar");
-  bar.querySelectorAll("[data-cat]").forEach(el=>el.remove());
+  const bar=$("#filterBar");bar.querySelectorAll("[data-cat]").forEach(el=>el.remove());
   const ref=bar.querySelector("[data-status]")||bar.querySelector(".sort-select");
   const lbl=bar.querySelector(".filter-label");
-  const allChip=document.createElement("button");
-  allChip.className="filter-chip"+(filterCat===""?" active":"");
-  allChip.dataset.cat="";allChip.textContent="All";
-  if(lbl&&lbl.nextSibling)bar.insertBefore(allChip,lbl.nextSibling);
-  else bar.insertBefore(allChip,ref);
-  CATEGORIES.filter(c=>used.has(c)).forEach(c=>{
-    const ch=document.createElement("button");
-    ch.className="filter-chip"+(filterCat===c?" active":"");
-    ch.dataset.cat=c;ch.textContent=c;
-    bar.insertBefore(ch,ref);
-  });
+  const allChip=document.createElement("button");allChip.className="filter-chip"+(filterCat===""?" active":"");allChip.dataset.cat="";allChip.textContent="All";
+  if(lbl&&lbl.nextSibling)bar.insertBefore(allChip,lbl.nextSibling);else bar.insertBefore(allChip,ref);
+  CATEGORIES.filter(c=>used.has(c)).forEach(c=>{const ch=document.createElement("button");ch.className="filter-chip"+(filterCat===c?" active":"");ch.dataset.cat=c;ch.textContent=c;bar.insertBefore(ch,ref);});
 }
 
-/* ---------- team database (Firebase) ---------- */
+/* ---------- Firebase ---------- */
 async function connectCloud(cfg){
-  try{
-    const appMod=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
-    fs=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
-    const app=appMod.getApps().length?appMod.getApp():appMod.initializeApp(cfg);
-    db=fs.getFirestore(app);
-    backend="cloud";reflectFbState();
-    fs.onSnapshot(fs.collection(db,"tickets"),(snap)=>{
-      playbooks=snap.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-      playbooks=playbooks.map(migrateTicket);
-      buildCatFilters();render();
-    },(err)=>{toast("Team database read error: "+err.message,"err");});
-    return true;
-  }catch(e){
-    backend="local";reflectFbState(e.message);
-    toast("Couldn't connect the team database: "+e.message,"err");
-    return false;
-  }
+  try{const appMod=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");fs=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");const app=appMod.getApps().length?appMod.getApp():appMod.initializeApp(cfg);db=fs.getFirestore(app);backend="cloud";reflectFbState();
+  fs.onSnapshot(fs.collection(db,"tickets"),(snap)=>{playbooks=snap.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));playbooks=playbooks.map(migrateTicket);buildCatFilters();render();},(err)=>{toast("Team database read error: "+err.message,"err");});return true;}
+  catch(e){backend="local";reflectFbState(e.message);toast("Couldn't connect: "+e.message,"err");return false;}
 }
-function reflectFbState(err){
-  const pill=$("#sharePill"),el=$("#fbState");
-  if(backend==="cloud"){pill.textContent="● Team sharing on";pill.className="share-pill on";if(el)el.textContent="Connected ✓ — tickets & comments are shared with everyone using this config.";$("#fbbox").open=false;}
-  else{pill.textContent="● Solo (this device)";pill.className="share-pill";if(el)el.textContent=err?("Not connected — "+err):(fbConfig?"Saved, not connected yet.":"Not connected — tickets stay on this device only.");}
-}
+function reflectFbState(err){const pill=$("#sharePill"),el=$("#fbState");if(backend==="cloud"){pill.textContent="● Team sharing on";pill.className="share-pill on";if(el)el.textContent="Connected ✓";$("#fbbox").open=false;}else{pill.textContent="● Solo (this device)";pill.className="share-pill";if(el)el.textContent=err?"Not connected — "+err:fbConfig?"Saved, not connected yet.":"Not connected — tickets stay on this device only.";}}
 
 /* ---------- AI ---------- */
 const SYSTEM=`You are Smart Assist, the AI sidekick inside an IT support team's knowledge base. Take a teammate's messy notes, pasted text, or an uploaded document/screenshot describing an IT task, and turn it into a clean, reusable ticket.
@@ -527,351 +503,148 @@ Rules:
 - Be concise; use vocabulary an IT technician recognizes.
 - Wrap any CLI commands, file paths, registry keys, or code in backtick marks.
 - Include full URLs if mentioned.
-Return ONLY a raw JSON object — no markdown, no backticks, no commentary — with EXACTLY:
+Return ONLY a raw JSON object with EXACTLY:
 {"title":string,"summary":string,"tags":string[],"tools":string[],"prerequisites":string[],"steps":string[],"warnings":string[],"category":string,"estTime":string}
 tags: 3-6 lowercase. tools/prerequisites/warnings may be empty.
-category: pick the single best from: Active Directory, Email / Exchange, Networking, VPN / Remote Access, Printers, Hardware, Software, Security, Onboarding / Offboarding, Cloud / SaaS, Phones / Mobile, Other. Use "" if unclear.
-estTime: estimate from: < 5 min, 5-15 min, 15-30 min, 30-60 min, 1+ hour. Use "" if unclear.
-If the source has no real procedure, still return valid JSON and add a warning that the notes were sparse.`;
-
-async function callAI({title,tags,notes,aiFile}){
-  const content=[];
-  if(aiFile&&aiFile.kind==="pdf")content.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:aiFile.data}});
-  if(aiFile&&aiFile.kind==="image")content.push({type:"image",source:{type:"base64",media_type:aiFile.mediaType,data:aiFile.data}});
-  content.push({type:"text",text:`Task title (may be blank — improve or create one): ${title||"(none)"}
-Suggested tags (may be blank): ${tags||"(none)"}
-Raw notes:
----
-${notes||"(none — use the attached file as the source)"}
----
-If a document or image is attached, treat it as the PRIMARY source.`});
-  const useDirect=!!apiKey;
-  if(!useDirect&&!hasCloud) throw new Error("no-key");
-  const headers={"Content-Type":"application/json"};
-  if(useDirect){headers["x-api-key"]=apiKey;headers["anthropic-version"]="2023-06-01";headers["anthropic-dangerous-direct-browser-access"]="true";}
-  const model=useDirect?"claude-sonnet-5":"claude-sonnet-4-6";
-  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model,max_tokens:2000,system:SYSTEM,messages:[{role:"user",content}]})});
-  const data=await res.json();
-  if(data.error) throw new Error(data.error.message||"API error");
-  let txt=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
-  txt=txt.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
-  const a=txt.indexOf("{"),b=txt.lastIndexOf("}");if(a>=0&&b>a)txt=txt.slice(a,b+1);
-  const obj=JSON.parse(txt);const arr=v=>Array.isArray(v)?v.filter(x=>String(x||"").trim()):[];
-  return{title:(obj.title||"").trim()||"Untitled ticket",summary:(obj.summary||"").trim(),tags:arr(obj.tags).map(t=>String(t).toLowerCase().trim()),tools:arr(obj.tools),prerequisites:arr(obj.prerequisites),steps:arr(obj.steps),warnings:arr(obj.warnings),category:(obj.category||"").trim(),estTime:(obj.estTime||"").trim()};
-}
+category: pick from: Active Directory, Email / Exchange, Networking, VPN / Remote Access, Printers, Hardware, Software, Security, Onboarding / Offboarding, Cloud / SaaS, Phones / Mobile, Other. Use "" if unclear.
+estTime: pick from: < 5 min, 5-15 min, 15-30 min, 30-60 min, 1+ hour. Use "" if unclear.
+If the source has no real procedure, still return valid JSON and add a warning.`;
+async function callAI({title,tags,notes,aiFile}){const content=[];if(aiFile&&aiFile.kind==="pdf")content.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:aiFile.data}});if(aiFile&&aiFile.kind==="image")content.push({type:"image",source:{type:"base64",media_type:aiFile.mediaType,data:aiFile.data}});content.push({type:"text",text:"Task title: "+(title||"(none)")+"\nSuggested tags: "+(tags||"(none)")+"\nRaw notes:\n---\n"+(notes||"(none — use the attached file)")+"\n---\nIf a document or image is attached, treat it as the PRIMARY source."});const useDirect=!!apiKey;if(!useDirect&&!hasCloud)throw new Error("no-key");const headers={"Content-Type":"application/json"};if(useDirect){headers["x-api-key"]=apiKey;headers["anthropic-version"]="2023-06-01";headers["anthropic-dangerous-direct-browser-access"]="true";}const model=useDirect?"claude-sonnet-5":"claude-sonnet-4-6";const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers,body:JSON.stringify({model,max_tokens:2000,system:SYSTEM,messages:[{role:"user",content}]})});const data=await res.json();if(data.error)throw new Error(data.error.message||"API error");let txt=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();txt=txt.replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();const a=txt.indexOf("{"),b=txt.lastIndexOf("}");if(a>=0&&b>a)txt=txt.slice(a,b+1);const obj=JSON.parse(txt);const arr=v=>Array.isArray(v)?v.filter(x=>String(x||"").trim()):[];return{title:(obj.title||"").trim()||"Untitled ticket",summary:(obj.summary||"").trim(),tags:arr(obj.tags).map(t=>String(t).toLowerCase().trim()),tools:arr(obj.tools),prerequisites:arr(obj.prerequisites),steps:arr(obj.steps),warnings:arr(obj.warnings),category:(obj.category||"").trim(),estTime:(obj.estTime||"").trim()};}
 
 /* ---------- data ops ---------- */
-async function addTicket(pb){
-  if(backend==="cloud"){try{const c=Object.assign({},pb);delete c.id;await fs.addDoc(fs.collection(db,"tickets"),c);}catch(e){toast("Couldn't save to team database: "+e.message,"err");}}
-  else{pb.id=uid();playbooks.unshift(pb);await saveLocal();buildCatFilters();render();}
-}
-async function updateTicket(id,pb){
-  if(backend==="cloud"){try{const c=Object.assign({},pb);delete c.id;await fs.setDoc(fs.doc(db,"tickets",id),c);}catch(e){toast("Couldn't update in team database: "+e.message,"err");}}
-  else{const i=playbooks.findIndex(p=>p.id===id);if(i>-1)playbooks[i]=pb;await saveLocal();buildCatFilters();render();}
-}
-async function delTicket(id){
-  if(backend==="cloud"){try{await fs.deleteDoc(fs.doc(db,"tickets",id));}catch(e){toast("Couldn't delete in team database: "+e.message,"err");}}
-  else{playbooks=playbooks.filter(x=>x.id!==id);await saveLocal();buildCatFilters();render();}
-}
-async function addComment(id,text){
+async function addTicket(pb){if(backend==="cloud"){try{const c={...pb};delete c.id;await fs.addDoc(fs.collection(db,"tickets"),c);}catch(e){toast("Couldn't save: "+e.message,"err");}}else{pb.id=uid();playbooks.unshift(pb);await saveLocal();buildCatFilters();render();}}
+async function updateTicket(id,pb){if(backend==="cloud"){try{const c={...pb};delete c.id;await fs.setDoc(fs.doc(db,"tickets",id),c);}catch(e){toast("Couldn't update: "+e.message,"err");}}else{const i=playbooks.findIndex(p=>p.id===id);if(i>-1)playbooks[i]=pb;await saveLocal();buildCatFilters();render();}}
+async function delTicket(id){if(backend==="cloud"){try{await fs.deleteDoc(fs.doc(db,"tickets",id));}catch(e){toast("Couldn't delete: "+e.message,"err");}}else{playbooks=playbooks.filter(x=>x.id!==id);await saveLocal();buildCatFilters();render();}}
+async function trackView(id){const p=playbooks.find(x=>x.id===id);if(!p)return;p.views=(p.views||0)+1;if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{views:p.views});}catch(e){}}else await saveLocal();}
+async function trackCopy(id){const p=playbooks.find(x=>x.id===id);if(!p)return;p.copies=(p.copies||0)+1;if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{copies:p.copies});}catch(e){}}else await saveLocal();}
+
+/* ---------- comments with replies ---------- */
+async function addComment(id,text,replyTo){
   text=text.trim();if(!text)return;
-  let name=myName||$("#f-author").value.trim();
-  if(!name){name=(prompt("Your name (shown on the comment):")||"").trim();if(name){myName=name;saveName(name);$("#f-author").value=name;}}
-  if(!name)name="Someone";
-  const c={id:uid(),author:name,text,at:Date.now()};
+  const name=requireName();if(!name)return;
+  const c={id:uid(),author:name,text,at:Date.now(),replyTo:replyTo||null};
   if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{comments:fs.arrayUnion(c),updatedAt:Date.now()});}catch(e){toast("Couldn't post comment: "+e.message,"err");}}
   else{const p=playbooks.find(x=>x.id===id);if(p){p.comments=p.comments||[];p.comments.push(c);p.updatedAt=Date.now();await saveLocal();render();}}
-}
-async function trackView(id){
-  const p=playbooks.find(x=>x.id===id);if(!p)return;
-  p.views=(p.views||0)+1;
-  if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{views:p.views});}catch(e){}}
-  else{await saveLocal();}
-}
-async function trackCopy(id){
-  const p=playbooks.find(x=>x.id===id);if(!p)return;
-  p.copies=(p.copies||0)+1;
-  if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{copies:p.copies});}catch(e){}}
-  else{await saveLocal();}
-}
-async function verifyTicket(id){
-  const p=playbooks.find(x=>x.id===id);if(!p)return;
-  let name=myName||$("#f-author").value.trim();
-  if(!name){name=(prompt("Your name (to record who verified):")||"").trim();if(name){myName=name;saveName(name);$("#f-author").value=name;}}
-  if(!name)name="Someone";
-  p.status="verified";p.verifiedAt=Date.now();p.verifiedBy=name;p.updatedAt=Date.now();
-  if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{status:"verified",verifiedAt:p.verifiedAt,verifiedBy:name,updatedAt:p.updatedAt});}catch(e){toast("Couldn't update: "+e.message,"err");}}
-  else{await saveLocal();render();}
-  toast("Marked as verified by "+name+".");
-}
-async function setStatus(id,status){
-  const p=playbooks.find(x=>x.id===id);if(!p)return;
-  p.status=status;p.updatedAt=Date.now();
-  if(status!=="verified"){p.verifiedAt=0;p.verifiedBy="";}
-  if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{status,updatedAt:p.updatedAt,verifiedAt:p.verifiedAt||0,verifiedBy:p.verifiedBy||""});}catch(e){toast("Couldn't update: "+e.message,"err");}}
-  else{await saveLocal();render();}
+  delete replyState[id];
 }
 
-/* ---------- file handling (multi-file, type-aware) ---------- */
-function handleFile(file){
-  if(!file)return;
-  // Text files → dump contents into notes box (useful raw text)
-  if(TEXT_EXT.test(file.name)||file.type.startsWith("text/")){
-    const r=new FileReader();
-    r.onload=()=>{
-      const cur=$("#f-notes").value;
-      $("#f-notes").value=(cur?cur+"\n\n":"")+r.result;
-      showMsg('Loaded "'+file.name+'" into notes.',"ok");
-    };
-    r.readAsText(file);
-    return;
-  }
+async function verifyTicket(id){const name=requireName();if(!name)return;const p=playbooks.find(x=>x.id===id);if(!p)return;p.status="verified";p.verifiedAt=Date.now();p.verifiedBy=name;p.updatedAt=Date.now();if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{status:"verified",verifiedAt:p.verifiedAt,verifiedBy:name,updatedAt:p.updatedAt});}catch(e){toast("Couldn't update: "+e.message,"err");}}else{await saveLocal();render();}toast("Marked as verified by "+name+".");}
+async function setStatus(id,status){const p=playbooks.find(x=>x.id===id);if(!p)return;p.status=status;p.updatedAt=Date.now();if(status!=="verified"){p.verifiedAt=0;p.verifiedBy="";}if(backend==="cloud"){try{await fs.updateDoc(fs.doc(db,"tickets",id),{status,updatedAt:p.updatedAt,verifiedAt:p.verifiedAt||0,verifiedBy:p.verifiedBy||""});}catch(e){toast("Couldn't update: "+e.message,"err");}}else{await saveLocal();render();}}
 
-  // Everything else → store as a downloadable attachment
-  const isPdf=PDF_RE.test(file.name)||file.type==="application/pdf";
-  const isImg=file.type.startsWith("image/")||IMG_RE.test(file.name);
-  const isDoc=DOC_EXT.test(file.name);
-
-  if(!isPdf&&!isImg&&!isDoc){
-    // try as generic binary attachment
-  }
-
-  const r=new FileReader();
-  r.onload=()=>{
-    const dataUrl=r.result;
-    const base64=String(dataUrl).split(",")[1];
-    const entry={
-      id:uid(),
-      name:file.name,
-      size:file.size,
-      type:file.type||"application/octet-stream",
-      dataUrl:dataUrl,   // full data URL for download
-      aiReadable:isPdf||isImg
-    };
-
-    // If it's PDF or image, also store AI-friendly data for Smart Assist
-    if(isPdf||isImg){
-      entry.aiKind=isPdf?"pdf":"image";
-      entry.aiMediaType=file.type||(isPdf?"application/pdf":"image/png");
-      entry.aiData=base64;
-      // set as the AI file (last one wins if multiple)
-      aiFile={kind:entry.aiKind,name:file.name,mediaType:entry.aiMediaType,data:base64};
-    }
-
-    pendingAttach.push(entry);
-    renderAttachChips();
-    const verb=entry.aiReadable?"Attached — Smart Assist will read it.":"Attached as a downloadable link.";
-    showMsg(file.name+": "+verb,"ok");
-  };
-  r.readAsDataURL(file);
-}
-
-function removeAttach(id){
-  const idx=pendingAttach.findIndex(a=>a.id===id);
-  if(idx>-1){
-    const removed=pendingAttach[idx];
-    pendingAttach.splice(idx,1);
-    // if we removed the AI file, try to find another
-    if(removed.aiReadable){
-      const next=pendingAttach.find(a=>a.aiReadable);
-      aiFile=next?{kind:next.aiKind,name:next.name,mediaType:next.aiMediaType,data:next.aiData}:null;
-    }
-  }
-  renderAttachChips();
-}
-function clearAllAttach(){
-  pendingAttach=[];aiFile=null;
-  renderAttachChips();
-  $("#f-file").value="";
-}
-function renderAttachChips(){
-  const list=$("#attachList");
-  if(!pendingAttach.length){list.innerHTML="";return;}
-  list.innerHTML=pendingAttach.map(a=>{
-    const ai=a.aiReadable?'<span class="ai-tag">Smart Assist will read this</span>':"";
-    return`<div class="chip-attach${a.aiReadable?" ai-readable":""}">
-      <span class="chip-icon">${fileIcon(a.name)}</span>
-      <div class="chip-info"><div class="chip-name">${esc(a.name)}</div><div class="chip-meta">${fmtSize(a.size)}${ai}</div></div>
-      <button class="x" data-rm="${a.id}" title="Remove">✕</button>
-    </div>`;
-  }).join("");
-}
+/* ---------- file handling ---------- */
+function handleFile(file){if(!file)return;if(TEXT_EXT.test(file.name)||file.type.startsWith("text/")){const r=new FileReader();r.onload=()=>{const cur=$("#f-notes").value;$("#f-notes").value=(cur?cur+"\n\n":"")+r.result;showMsg('Loaded "'+file.name+'" into notes.',"ok");};r.readAsText(file);return;}
+const isPdf=PDF_RE.test(file.name)||file.type==="application/pdf";const isImg=file.type.startsWith("image/")||IMG_RE.test(file.name);
+const r=new FileReader();r.onload=()=>{const dataUrl=r.result;const base64=String(dataUrl).split(",")[1];const entry={id:uid(),name:file.name,size:file.size,type:file.type||"application/octet-stream",dataUrl,aiReadable:isPdf||isImg};if(isPdf||isImg){entry.aiKind=isPdf?"pdf":"image";entry.aiMediaType=file.type||(isPdf?"application/pdf":"image/png");entry.aiData=base64;aiFile={kind:entry.aiKind,name:file.name,mediaType:entry.aiMediaType,data:base64};}pendingAttach.push(entry);renderAttachChips();showMsg(file.name+": "+(entry.aiReadable?"Attached — Smart Assist will read it.":"Attached as a downloadable link."),"ok");};r.readAsDataURL(file);}
+function removeAttach(id){const idx=pendingAttach.findIndex(a=>a.id===id);if(idx>-1){const removed=pendingAttach[idx];pendingAttach.splice(idx,1);if(removed.aiReadable){const next=pendingAttach.find(a=>a.aiReadable);aiFile=next?{kind:next.aiKind,name:next.name,mediaType:next.aiMediaType,data:next.aiData}:null;}}renderAttachChips();}
+function clearAllAttach(){pendingAttach=[];aiFile=null;renderAttachChips();$("#f-file").value="";}
+function renderAttachChips(){const list=$("#attachList");if(!pendingAttach.length){list.innerHTML="";return;}list.innerHTML=pendingAttach.map(a=>{const ai=a.aiReadable?'<span class="ai-tag">Smart Assist will read this</span>':"";return'<div class="chip-attach'+(a.aiReadable?" ai-readable":"")+'"><span class="chip-icon">'+fileIcon(a.name)+'</span><div class="chip-info"><div class="chip-name">'+esc(a.name)+'</div><div class="chip-meta">'+fmtSize(a.size)+ai+'</div></div><button class="x" data-rm="'+a.id+'" title="Remove">✕</button></div>';}).join("");}
 
 /* ---------- form ---------- */
-function collect(){return{author:$("#f-author").value.trim(),title:$("#f-title").value.trim(),tags:$("#f-tags").value.trim(),notes:$("#f-notes").value.trim(),category:$("#f-category").value,estTime:$("#f-est").value,status:$("#f-status").value,related:$("#f-related").value.trim()};}
-
+function collect(){return{title:$("#f-title").value.trim(),tags:$("#f-tags").value.trim(),notes:$("#f-notes").value.trim(),category:$("#f-category").value,estTime:$("#f-est").value,status:$("#f-status").value,related:$("#f-related").value.trim()};}
 async function commit(pb){
-  const c=collect();
-  pb.author=c.author;
-  pb.rawNotes=c.notes;
-  if(!pb.category)pb.category=c.category;
-  if(!pb.estTime)pb.estTime=c.estTime;
-  pb.status=c.status;
-  pb.relatedTitles=c.related?c.related.split(",").map(t=>t.trim()).filter(Boolean):[];
-  if(c.author){myName=c.author;saveName(c.author);}
-
-  // Build attachments array (store dataUrl + metadata, no raw AI data to save space)
+  const name=requireName();if(!name)return;
+  const c=collect();pb.author=name;pb.rawNotes=c.notes;if(!pb.category)pb.category=c.category;if(!pb.estTime)pb.estTime=c.estTime;pb.status=c.status;pb.relatedTitles=c.related?c.related.split(",").map(t=>t.trim()).filter(Boolean):[];
   const savedAttach=pendingAttach.map(a=>({id:a.id,name:a.name,size:a.size,type:a.type,dataUrl:a.dataUrl}));
-
   const now=Date.now();
-  if(editingId){
-    const ex=playbooks.find(p=>p.id===editingId)||{};
-    pb.id=editingId;pb.createdAt=ex.createdAt||now;pb.updatedAt=now;pb.comments=ex.comments||[];pb.views=ex.views||0;pb.copies=ex.copies||0;pb.verifiedAt=ex.verifiedAt||0;pb.verifiedBy=ex.verifiedBy||"";
-    // merge attachments: keep existing ones that weren't removed, add new ones
-    const existingAttach=ex.attachments||[];
-    const existingIds=new Set(savedAttach.map(a=>a.id));
-    const kept=existingAttach.filter(a=>!existingIds.has(a.id)&&pendingAttach.some(p=>p.id===a.id));
-    pb.attachments=[...kept,...savedAttach];
-    if(c.status==="verified"&&ex.status!=="verified"){pb.verifiedAt=now;pb.verifiedBy=c.author||myName||"Someone";}
-    await updateTicket(editingId,pb);stopEdit();
-  } else {
-    pb.createdAt=now;pb.updatedAt=now;pb.comments=[];pb.views=0;pb.copies=0;pb.verifiedAt=0;pb.verifiedBy="";
-    pb.attachments=savedAttach;
-    if(c.status==="verified"){pb.verifiedAt=now;pb.verifiedBy=c.author||myName||"Someone";}
-    openIds.add("__new");await addTicket(pb);
-  }
+  if(editingId){const ex=playbooks.find(p=>p.id===editingId)||{};pb.id=editingId;pb.createdAt=ex.createdAt||now;pb.updatedAt=now;pb.comments=ex.comments||[];pb.views=ex.views||0;pb.copies=ex.copies||0;pb.verifiedAt=ex.verifiedAt||0;pb.verifiedBy=ex.verifiedBy||"";pb.attachments=savedAttach;if(c.status==="verified"&&ex.status!=="verified"){pb.verifiedAt=now;pb.verifiedBy=name;}await updateTicket(editingId,pb);stopEdit();}
+  else{pb.createdAt=now;pb.updatedAt=now;pb.comments=[];pb.views=0;pb.copies=0;pb.verifiedAt=0;pb.verifiedBy="";pb.attachments=savedAttach;if(c.status==="verified"){pb.verifiedAt=now;pb.verifiedBy=name;}openIds.add("__new");await addTicket(pb);}
   resetForm();setView("browse");
 }
-
-async function doAssist(){
-  const {title,tags,notes}=collect();
-  if(!notes&&!aiFile&&!pendingAttach.length){showMsg("Add some notes or attach a file first.","err");return;}
-  const btn=$("#assistBtn"),original=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spin"></span>Assembling…';showMsg("","");
-  try{
-    const out=await callAI({title,tags,notes,aiFile});
-    const tagList=out.tags.length?out.tags:tags.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean);
-    if(out.category&&!collect().category)$("#f-category").value=out.category;
-    if(out.estTime&&!collect().estTime)$("#f-est").value=out.estTime;
-    await commit(Object.assign({},out,{tags:tagList,aiCleaned:true}));
-  }
-  catch(e){if(e.message==="no-key"){showMsg('Smart Assist needs an Anthropic API key when running the downloaded file. Add one under "🔑 AI key" above, or open the app inside Claude.',"err");$("#keybox").open=true;}else{showMsg("Smart Assist couldn't format that ("+e.message+"). You can still use \"Add as-is\".","err");}}
-  finally{btn.disabled=false;btn.innerHTML=original;}
-}
-
-async function doPlain(){
-  const {title,tags,notes}=collect();
-  if(!title&&!notes&&!pendingAttach.length){showMsg("Add a title, notes, or a file first.","err");return;}
-  const steps=notes?notes.split(/\r?\n/).map(l=>l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/,"").trim()).filter(Boolean):[];
-  await commit({title:title||"Untitled ticket",summary:"",tags:tags.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean),tools:[],prerequisites:[],steps:steps.length>1?steps:[],warnings:[],aiCleaned:false,category:collect().category,estTime:collect().estTime});
-}
-
-function startEdit(id){
-  const p=playbooks.find(x=>x.id===id);if(!p)return;editingId=id;
-  $("#f-title").value=p.title==="Untitled ticket"?"":p.title;
-  $("#f-tags").value=(p.tags||[]).join(", ");
-  $("#f-notes").value=p.rawNotes||[p.summary,...(p.steps||[])].filter(Boolean).join("\n");
-  if(p.author)$("#f-author").value=p.author;
-  $("#f-category").value=p.category||"";
-  $("#f-est").value=p.estTime||"";
-  $("#f-status").value=p.status||"draft";
-  $("#f-related").value=(p.relatedTitles||[]).join(", ");
-  // restore attachments to pending
-  pendingAttach=(p.attachments||[]).map(a=>({...a,aiReadable:false}));
-  aiFile=null;
-  renderAttachChips();
-  $("#assistBtn").innerHTML="⚡ Re-run Smart Assist";$("#plainBtn").textContent="Save changes";$("#cancelEdit").hidden=false;
-  setView("create");$("#f-title").focus();
-}
+async function doAssist(){const {title,tags,notes}=collect();if(!notes&&!aiFile&&!pendingAttach.length){showMsg("Add some notes or attach a file first.","err");return;}const btn=$("#assistBtn"),original=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spin"></span>Assembling…';showMsg("","");try{const out=await callAI({title,tags,notes,aiFile});const tagList=out.tags.length?out.tags:tags.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean);if(out.category&&!collect().category)$("#f-category").value=out.category;if(out.estTime&&!collect().estTime)$("#f-est").value=out.estTime;await commit({...out,tags:tagList,aiCleaned:true});}catch(e){if(e.message==="no-key"){showMsg('Smart Assist needs an Anthropic API key when running the downloaded file. Add one under "🔑 AI key" above, or open the app inside Claude.',"err");$("#keybox").open=true;}else showMsg("Smart Assist couldn't format that ("+e.message+'). You can still use "Add as-is".',"err");}finally{btn.disabled=false;btn.innerHTML=original;}}
+async function doPlain(){const {title,tags,notes}=collect();if(!title&&!notes&&!pendingAttach.length){showMsg("Add a title, notes, or a file first.","err");return;}const steps=notes?notes.split(/\r?\n/).map(l=>l.replace(/^\s*(?:\d+[.)]|[-*•])\s*/,"").trim()).filter(Boolean):[];await commit({title:title||"Untitled ticket",summary:"",tags:tags.split(",").map(t=>t.trim().toLowerCase()).filter(Boolean),tools:[],prerequisites:[],steps:steps.length>1?steps:[],warnings:[],aiCleaned:false,category:collect().category,estTime:collect().estTime});}
+function startEdit(id){const p=playbooks.find(x=>x.id===id);if(!p)return;editingId=id;$("#f-title").value=p.title==="Untitled ticket"?"":p.title;$("#f-tags").value=(p.tags||[]).join(", ");$("#f-notes").value=p.rawNotes||[p.summary,...(p.steps||[])].filter(Boolean).join("\n");$("#f-category").value=p.category||"";$("#f-est").value=p.estTime||"";$("#f-status").value=p.status||"draft";$("#f-related").value=(p.relatedTitles||[]).join(", ");pendingAttach=(p.attachments||[]).map(a=>({...a,aiReadable:false}));aiFile=null;renderAttachChips();$("#assistBtn").innerHTML="⚡ Re-run Smart Assist";$("#plainBtn").textContent="Save changes";$("#cancelEdit").hidden=false;setView("create");$("#f-title").focus();}
 function stopEdit(){editingId=null;$("#cancelEdit").hidden=true;}
-function resetForm(){
-  $("#f-title").value="";$("#f-tags").value="";$("#f-notes").value="";
-  $("#f-category").value="";$("#f-est").value="";$("#f-status").value="draft";
-  $("#f-related").value="";
-  clearAllAttach();
-  $("#assistBtn").innerHTML="⚡ Smart Assist";$("#plainBtn").textContent="Add as-is";
-}
-async function del(id){const p=playbooks.find(x=>x.id===id);if(!p)return;if(!confirm('Delete "'+p.title+'"? This can\'t be undone.'))return;await delTicket(id);}
-
-function copySteps(id){
-  const p=playbooks.find(x=>x.id===id);if(!p)return;let t=p.title+"\n";
-  if(p.category)t+="Category: "+p.category+"\n";
-  if(p.estTime)t+="Est. time: "+p.estTime+"\n";
-  if(p.author)t+="Logged by: "+p.author+"\n";if(p.summary)t+=p.summary+"\n";
-  if(p.tools?.length)t+="\nTools: "+p.tools.join(", ");if(p.prerequisites?.length)t+="\nPrerequisites: "+p.prerequisites.join("; ");
-  if(p.steps?.length)t+="\n\nSteps:\n"+p.steps.map((s,i)=>`${i+1}. ${s}`).join("\n");if(p.warnings?.length)t+="\n\nWatch-outs: "+p.warnings.join("; ");
-  if(p.attachments?.length)t+="\n\nAttached files: "+p.attachments.map(a=>a.name).join(", ");
-  navigator.clipboard.writeText(t.trim()).then(()=>{trackCopy(id);const b=document.querySelector('[data-copy="'+id+'"]');if(b){const o=b.textContent;b.textContent="Copied ✓";setTimeout(()=>b.textContent=o,1400);}});
-}
-
-function downloadAttach(ticketId,attachId){
-  const p=playbooks.find(x=>x.id===ticketId);if(!p)return;
-  const a=(p.attachments||[]).find(x=>x.id===attachId);if(!a||!a.dataUrl)return;
-  const link=document.createElement("a");
-  link.href=a.dataUrl;
-  link.download=a.name;
-  link.click();
-}
+function resetForm(){$("#f-title").value="";$("#f-tags").value="";$("#f-notes").value="";$("#f-category").value="";$("#f-est").value="";$("#f-status").value="draft";$("#f-related").value="";clearAllAttach();$("#assistBtn").innerHTML="⚡ Smart Assist";$("#plainBtn").textContent="Add as-is";}
+async function del(id){const p=playbooks.find(x=>x.id===id);if(!p||!confirm('Delete "'+p.title+'"?'))return;await delTicket(id);}
+function copySteps(id){const p=playbooks.find(x=>x.id===id);if(!p)return;let t=p.title+"\n";if(p.category)t+="Category: "+p.category+"\n";if(p.estTime)t+="Est. time: "+p.estTime+"\n";if(p.author)t+="Logged by: "+p.author+"\n";if(p.summary)t+=p.summary+"\n";if(p.tools?.length)t+="\nTools: "+p.tools.join(", ");if(p.prerequisites?.length)t+="\nPrerequisites: "+p.prerequisites.join("; ");if(p.steps?.length)t+="\n\nSteps:\n"+p.steps.map((s,i)=>(i+1)+". "+s).join("\n");if(p.warnings?.length)t+="\n\nWatch-outs: "+p.warnings.join("; ");if(p.attachments?.length)t+="\n\nAttached files: "+p.attachments.map(a=>a.name).join(", ");navigator.clipboard.writeText(t.trim()).then(()=>{trackCopy(id);const b=document.querySelector('[data-copy="'+id+'"]');if(b){const o=b.textContent;b.textContent="Copied ✓";setTimeout(()=>b.textContent=o,1400);}});}
+function downloadAttach(ticketId,attachId){const p=playbooks.find(x=>x.id===ticketId);if(!p)return;const a=(p.attachments||[]).find(x=>x.id===attachId);if(!a||!a.dataUrl)return;const link=document.createElement("a");link.href=a.dataUrl;link.download=a.name;link.click();}
 
 /* ---------- import / export ---------- */
 function doExport(){const blob=new Blob([JSON.stringify(playbooks,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="taskforce-tickets-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href);}
-function doImport(file){
-  const r=new FileReader();
-  r.onload=async()=>{
-    try{
-      let data=JSON.parse(r.result);if(!Array.isArray(data))data=data.playbooks||data.notes||[];
-      const norm=data.map(d=>migrateTicket({id:d.id||uid(),title:d.title||d.name||"Untitled ticket",summary:d.summary||d.desc||"",author:d.author||"",tags:Array.isArray(d.tags)?d.tags:String(d.tags||"").split(",").map(t=>t.trim()).filter(Boolean),tools:d.tools||[],prerequisites:d.prerequisites||d.prereqs||[],steps:Array.isArray(d.steps)?d.steps:[],warnings:d.warnings||[],rawNotes:d.rawNotes||d.notes||"",comments:Array.isArray(d.comments)?d.comments:[],aiCleaned:!!d.aiCleaned,createdAt:d.createdAt||Date.now(),updatedAt:d.updatedAt||Date.now(),attachments:d.attachments||[]}));
-      if(backend==="cloud"){for(const t of norm){const c=Object.assign({},t);delete c.id;await fs.addDoc(fs.collection(db,"tickets"),c);}}
-      else{const byId={};[...playbooks,...norm].forEach(p=>byId[p.id]=p);playbooks=Object.values(byId).sort((a,b)=>b.updatedAt-a.updatedAt);await saveLocal();buildCatFilters();render();}
-      setView("browse");toast("Imported "+norm.length+" ticket"+(norm.length===1?"":"s")+(backend==="cloud"?" into the team database.":"."));
-    }catch(e){toast("That file couldn't be read as Task Force tickets.","err");}
-  };
-  r.readAsText(file);
-}
+function doImport(file){const r=new FileReader();r.onload=async()=>{try{let data=JSON.parse(r.result);if(!Array.isArray(data))data=data.playbooks||data.notes||[];const norm=data.map(d=>migrateTicket({id:d.id||uid(),title:d.title||d.name||"Untitled ticket",summary:d.summary||d.desc||"",author:d.author||"",tags:Array.isArray(d.tags)?d.tags:String(d.tags||"").split(",").map(t=>t.trim()).filter(Boolean),tools:d.tools||[],prerequisites:d.prerequisites||d.prereqs||[],steps:Array.isArray(d.steps)?d.steps:[],warnings:d.warnings||[],rawNotes:d.rawNotes||d.notes||"",comments:Array.isArray(d.comments)?d.comments:[],aiCleaned:!!d.aiCleaned,createdAt:d.createdAt||Date.now(),updatedAt:d.updatedAt||Date.now(),attachments:d.attachments||[]}));if(backend==="cloud"){for(const t of norm){const c={...t};delete c.id;await fs.addDoc(fs.collection(db,"tickets"),c);}}else{const byId={};[...playbooks,...norm].forEach(p=>byId[p.id]=p);playbooks=Object.values(byId).sort((a,b)=>b.updatedAt-a.updatedAt);await saveLocal();buildCatFilters();render();}setView("browse");toast("Imported "+norm.length+" ticket"+(norm.length===1?"":"s")+".");}catch(e){toast("Couldn't read that file as tickets.","err");}};r.readAsText(file);}
 
 /* ---------- sorting ---------- */
-function sortTickets(arr){
-  switch(sortMode){
-    case"alpha":return arr.slice().sort((a,b)=>a.title.localeCompare(b.title));
-    case"most-viewed":return arr.slice().sort((a,b)=>(b.views||0)-(a.views||0));
-    case"recently-verified":return arr.slice().sort((a,b)=>(b.verifiedAt||0)-(a.verifiedAt||0));
-    default:return arr.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  }
-}
-
-/* ---------- related ticket matching ---------- */
-function findRelated(titles){
-  if(!titles||!titles.length)return[];
-  const results=[];
-  titles.forEach(term=>{
-    const t=term.toLowerCase();
-    playbooks.forEach(p=>{
-      if(p.title.toLowerCase().includes(t)||((p.tags||[]).some(tag=>tag.includes(t)))){
-        if(!results.find(r=>r.id===p.id))results.push(p);
-      }
-    });
-  });
-  return results;
-}
+function sortTickets(arr){switch(sortMode){case"alpha":return arr.slice().sort((a,b)=>a.title.localeCompare(b.title));case"most-viewed":return arr.slice().sort((a,b)=>(b.views||0)-(a.views||0));case"recently-verified":return arr.slice().sort((a,b)=>(b.verifiedAt||0)-(a.verifiedAt||0));default:return arr.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));}}
+function findRelated(titles){if(!titles||!titles.length)return[];const results=[];titles.forEach(term=>{const t=term.toLowerCase();playbooks.forEach(p=>{if(p.title.toLowerCase().includes(t)||(p.tags||[]).some(tag=>tag.includes(t))){if(!results.find(r=>r.id===p.id))results.push(p);}});});return results;}
 
 /* ---------- render ---------- */
 function matches(p,q){if(!q)return true;const hay=[p.title,p.summary,p.author,p.category,(p.tags||[]).join(" "),(p.tools||[]).join(" "),(p.steps||[]).join(" "),(p.warnings||[]).join(" "),(p.comments||[]).map(c=>c.text+" "+c.author).join(" "),p.rawNotes,(p.attachments||[]).map(a=>a.name).join(" ")].join(" ").toLowerCase();return q.toLowerCase().split(/\s+/).filter(Boolean).every(t=>hay.includes(t));}
 function hl(text,q){const s=esc(text);if(!q)return s;const terms=q.split(/\s+/).filter(Boolean).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));if(!terms.length)return s;return s.replace(new RegExp("("+terms.join("|")+")","gi"),"<mark>$1</mark>");}
-function listBlock(lab,items){if(!items||!items.length)return"";return`<div class="block"><div class="lab">${lab}</div><ul class="inline-list">${items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>`;}
-function setView(v){view=v;$("#view-create").classList.toggle("active",v==="create");$("#view-browse").classList.toggle("active",v==="browse");$("#tab-create").classList.toggle("active",v==="create");$("#tab-browse").classList.toggle("active",v==="browse");window.scrollTo({top:0,behavior:"smooth"});}
+function listBlock(lab,items){if(!items||!items.length)return"";return'<div class="block"><div class="lab">'+lab+'</div><ul class="inline-list">'+items.map(i=>"<li>"+esc(i)+"</li>").join("")+"</ul></div>";}
 function showMsg(text,kind){const m=$("#msg");m.textContent=text;m.className="msg "+(kind||"");if(kind==="ok")setTimeout(()=>{if(m.textContent===text)m.className="msg";},4000);}
-function reflectKeyState(){const el=$("#keyState");if(apiKey){el.innerHTML='A key is saved in this browser ✓ · <a id="rmKey">remove</a>';$("#rmKey").onclick=async()=>{apiKey="";await storeDel(KKEY);reflectKeyState();};}else{el.textContent=hasCloud?"No key set — Smart Assist will use the free in-Claude AI.":"No key set — Smart Assist needs one in this downloaded copy.";}}
+function reflectKeyState(){const el=$("#keyState");if(apiKey){el.innerHTML='A key is saved ✓ · <a id="rmKey">remove</a>';$("#rmKey").onclick=async()=>{apiKey="";await storeDel(KKEY);reflectKeyState();};}else el.textContent=hasCloud?"No key set — Smart Assist uses the free in-Claude AI.":"No key set — Smart Assist needs one in a downloaded copy.";}
+function statusBadge(p){const s=p.status||"draft";const labels={"draft":"Draft","needs-review":"Needs review","verified":"Verified"};const icons={"draft":"○","needs-review":"◑","verified":"✓"};let extra="";if(s==="verified"&&p.verifiedAt)extra='<span class="verified-info">by '+esc(p.verifiedBy||"?")+" "+rel(p.verifiedAt)+"</span>";return'<span class="status-badge s-'+s+'">'+icons[s]+" "+labels[s]+"</span>"+extra;}
+function renderAttachBlock(p){const att=p.attachments||[];if(!att.length)return"";return'<div class="block"><div class="lab">Attached files ('+att.length+')</div><div class="attach-block">'+att.map(a=>'<div class="attach-card"><div class="a-icon '+fileIconClass(a.name)+'">'+fileIcon(a.name)+'</div><div class="a-info"><div class="a-name">'+esc(a.name)+'</div><div class="a-size">'+fmtSize(a.size||0)+'</div></div><button class="a-dl" data-dlticket="'+p.id+'" data-dlattach="'+a.id+'">⬇ Download</button></div>').join("")+"</div></div>";}
 
-function statusBadge(p){
-  const s=p.status||"draft";
-  const labels={"draft":"Draft","needs-review":"Needs review","verified":"Verified"};
-  const icons={"draft":"○","needs-review":"◑","verified":"✓"};
-  let extra="";
-  if(s==="verified"&&p.verifiedAt){extra=`<span class="verified-info">by ${esc(p.verifiedBy||"?")} ${rel(p.verifiedAt)}</span>`;}
-  return`<span class="status-badge s-${s}">${icons[s]} ${labels[s]}</span>${extra}`;
+function renderComments(p){
+  const all=(p.comments||[]).slice().sort((a,b)=>a.at-b.at);
+  // separate top-level and replies
+  const topLevel=all.filter(c=>!c.replyTo);
+  const repliesOf={};all.filter(c=>c.replyTo).forEach(c=>{if(!repliesOf[c.replyTo])repliesOf[c.replyTo]=[];repliesOf[c.replyTo].push(c);});
+  const rs=replyState[p.id];
+  const replyContext=rs?'<div class="crow-context">↳ Replying to '+esc(rs.replyAuthor)+' <button class="cancel-reply" data-cancelreply="'+p.id+'">✕ cancel</button></div>':"";
+
+  if(!all.length&&!rs) return'<div class="block comments"><div class="lab">Comments (0)</div><div class="cmt-empty">No comments yet — be the first.</div>'+replyContext+'<div class="crow"><input class="cinput" type="text" data-cid="'+p.id+'" placeholder="Add a comment…"><button class="mini csend" data-cid="'+p.id+'">Post</button></div></div>';
+
+  let html='<div class="block comments"><div class="lab">Comments ('+all.length+')</div><div class="clist">';
+  topLevel.forEach(c=>{
+    const isMine=myName&&c.author.toLowerCase()===myName.toLowerCase();
+    html+='<div class="cmt'+(isMine?" mine":"")+'"><div class="cmt-head"><span class="cmt-who">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(c.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(c.text)+'</div>';
+    // render replies to this comment
+    const replies=repliesOf[c.id]||[];
+    if(replies.length){
+      html+='<div class="cmt-replies">';
+      replies.forEach(r=>{
+        const rMine=myName&&r.author.toLowerCase()===myName.toLowerCase();
+        html+='<div class="cmt'+(rMine?" mine":"")+'"><div class="cmt-head"><span class="cmt-who">'+esc(r.author)+'</span><span class="cmt-when">'+rel(r.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(r.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(r.text)+'</div></div>';
+      });
+      html+='</div>';
+    }
+    html+='</div>';
+  });
+  // also render orphan replies (replyTo a deleted comment) at top level
+  const orphans=all.filter(c=>c.replyTo&&!all.find(x=>x.id===c.replyTo));
+  orphans.forEach(c=>{
+    const isMine=myName&&c.author.toLowerCase()===myName.toLowerCase();
+    html+='<div class="cmt'+(isMine?" mine":"")+'"><div class="cmt-replying-to">reply to a removed comment</div><div class="cmt-head"><span class="cmt-who">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span></div><div class="cmt-txt">'+esc(c.text)+'</div></div>';
+  });
+  html+='</div>';
+  html+=replyContext+'<div class="crow"><input class="cinput" type="text" data-cid="'+p.id+'" placeholder="'+(rs?"Reply to "+rs.replyAuthor+"…":"Add a comment…")+'"><button class="mini csend" data-cid="'+p.id+'">Post</button></div></div>';
+  return html;
 }
 
-function renderAttachBlock(p){
-  const att=p.attachments||[];
-  if(!att.length)return"";
-  return`<div class="block"><div class="lab">Attached files (${att.length})</div><div class="attach-block">${att.map(a=>{
-    const icon=fileIcon(a.name);
-    const cls=fileIconClass(a.name);
-    return`<div class="attach-card">
-      <div class="a-icon ${cls}">${icon}</div>
-      <div class="a-info"><div class="a-name">${esc(a.name)}</div><div class="a-size">${fmtSize(a.size||0)}</div></div>
-      <button class="a-dl" data-dlticket="${p.id}" data-dlattach="${a.id}">⬇ Download</button>
-    </div>`;
-  }).join("")}</div></div>`;
+function renderTicketList(tickets,q,container){
+  if(!tickets.length){container.innerHTML='<div class="empty"><div class="big">No tickets here</div><p>Nothing to show yet.</p></div>';return;}
+  container.innerHTML=tickets.map((p,idx)=>{
+    const n=String(idx+1).padStart(2,"0");
+    const tags=(p.tags||[]).map(t=>'<span class="tag">#'+hl(t,q)+"</span>").join("");
+    const catTag=p.category?'<span class="tag" style="color:var(--green);border-color:rgba(126,224,166,.35);background:rgba(126,224,166,.08)">'+esc(p.category)+"</span>":"";
+    const attachCt=(p.attachments||[]).length;const attachBadge=attachCt?'<span class="attach-count-badge">📎 '+attachCt+"</span>":"";
+    const dt=new Date(p.updatedAt).toLocaleDateString();
+    const by=p.author?' · <span class="by">by '+esc(p.author)+"</span>":"";
+    const cn=(p.comments||[]).length;const cc=cn?'<span class="cc">💬 '+cn+"</span>":"";
+    const est=p.estTime?'<span class="est">⏱ '+esc(p.estTime)+"</span>":"";
+    const vc='<span class="views-ct">'+(p.views||0)+" views · "+(p.copies||0)+" copied</span>";
+    const open=openIds.has(p.id)?" open":"";
+    const stepsHtml=(p.steps||[]).length?'<div class="block"><div class="lab">Steps</div><ul class="steps">'+p.steps.map(s=>"<li>"+fmtStep(s,q)+"</li>").join("")+"</ul></div>":(p.rawNotes?'<div class="block"><div class="lab">Raw notes</div><div class="raw">'+hl(p.rawNotes,q)+"</div></div>":'<div class="block"><div class="lab">Raw notes</div><div class="raw">(no steps yet — run Smart Assist)</div></div>');
+    const warnHtml=(p.warnings||[]).length?'<div class="block warn"><div class="lab">Watch-outs</div><ul>'+p.warnings.map(w=>"<li>"+esc(w)+"</li>").join("")+"</ul></div>":"";
+    const attachHtml=renderAttachBlock(p);
+    const related=findRelated(p.relatedTitles||[]).filter(r=>r.id!==p.id);
+    const relatedHtml=related.length?'<div class="block"><div class="lab">Related tickets</div><div class="related-list">'+related.map(r=>'<a class="related-link" data-goto="'+r.id+'">'+esc(r.title)+"</a>").join("")+"</div></div>":"";
+    const commentsHtml=renderComments(p);
+    const statusBtns=p.status==="verified"?'<button class="mini" data-setstatus="'+p.id+'" data-newstatus="needs-review">↩ Mark needs review</button>':'<button class="mini verify-btn" data-verify="'+p.id+'">✓ Still works — verify</button>';
+    return '<article class="dossier'+open+'" data-id="'+p.id+'"><div class="doss-head" data-toggle="'+p.id+'"><div class="num">'+n+'</div><div class="doss-title"><h3>'+hl(p.title,q)+(p.aiCleaned?'<span class="ai-pill">AI-cleaned</span>':'')+'</h3>'+(p.summary?'<p class="summary">'+hl(p.summary,q)+'</p>':'')+'<div class="tags">'+statusBadge(p)+' '+catTag+' '+attachBadge+' '+tags+'</div><div class="meta"><span>'+(p.steps||[]).length+' steps</span>'+est+by+cc+vc+'<span>updated '+dt+'</span></div></div><div class="caret">▶</div></div><div class="body">'+listBlock("Tools & access",p.tools)+listBlock("Prerequisites",p.prerequisites)+stepsHtml+warnHtml+attachHtml+relatedHtml+commentsHtml+'<div class="doss-tools"><button class="mini" data-copy="'+p.id+'">Copy steps</button>'+statusBtns+'<button class="mini" data-edit="'+p.id+'">Edit</button><button class="mini del" data-del="'+p.id+'">Delete</button></div></div></article>';
+  }).join("");
+}
+
+function setView(v){
+  view=v;
+  ["create","browse","mine"].forEach(n=>{
+    $("#view-"+n).classList.toggle("active",v===n);
+    $("#tab-"+n).classList.toggle("active",v===n);
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(v==="mine")renderMine();
 }
 
 function render(){
@@ -882,49 +655,25 @@ function render(){
   const shown=sortTickets(filtered);
   $("#count").textContent=playbooks.length+(playbooks.length===1?" ticket":" tickets");
   $("#tabCount").textContent=playbooks.length;
-  let scopeText="/ all tickets";
-  const parts=[];
-  if(q)parts.push('"'+q+'"');
-  if(filterCat)parts.push(filterCat);
-  if(filterStatus)parts.push(filterStatus);
-  if(parts.length)scopeText="/ "+shown.length+" match"+(shown.length===1?"":"es")+(parts.length?" in "+parts.join(" + "):"");
+  // mine count
+  const mineTickets=myName?playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()):[];
+  $("#mineCount").textContent=mineTickets.length;
+  let scopeText="/ all tickets";const parts=[];if(q)parts.push('"'+q+'"');if(filterCat)parts.push(filterCat);if(filterStatus)parts.push(filterStatus);if(parts.length)scopeText="/ "+shown.length+" match"+(shown.length===1?"":"es")+" in "+parts.join(" + ");
   $("#scope").textContent=scopeText;
   if(openIds.has("__new")&&shown[0]){openIds.delete("__new");openIds.add(shown[0].id);}
   const list=$("#list");
-  if(!playbooks.length){list.innerHTML='<div class="empty"><div class="big">No tickets yet</div><p>Log your first how-to and Smart Assist will suit it up into clean, numbered steps.</p><button class="cta" style="max-width:220px;margin:0 auto" id="emptyCreate">⚡ Create a ticket</button></div>';$("#emptyCreate").addEventListener("click",()=>setView("create"));return;}
-  if(!shown.length){list.innerHTML='<div class="empty"><div class="big">No matches</div><p>Nothing matches those filters. Try fewer or different words.</p></div>';return;}
-  list.innerHTML=shown.map((p,idx)=>{
-    const n=String(idx+1).padStart(2,"0");
-    const tags=(p.tags||[]).map(t=>'<span class="tag">#'+hl(t,q)+"</span>").join("");
-    const catTag=p.category?'<span class="tag" style="color:var(--green);border-color:rgba(126,224,166,.35);background:rgba(126,224,166,.08)">'+esc(p.category)+"</span>":"";
-    const attachCt=(p.attachments||[]).length;
-    const attachBadge=attachCt?'<span class="attach-count-badge">📎 '+attachCt+" file"+(attachCt===1?"":"s")+"</span>":"";
-    const dt=new Date(p.updatedAt).toLocaleDateString();
-    const by=p.author?' · <span class="by">by '+esc(p.author)+"</span>":"";
-    const cn=(p.comments||[]).length;const cc=cn?'<span class="cc">💬 '+cn+"</span>":"";
-    const est=p.estTime?'<span class="est">⏱ '+esc(p.estTime)+"</span>":"";
-    const vc='<span class="views-ct">'+(p.views||0)+" view"+((p.views||0)===1?"":"s")+" · "+(p.copies||0)+" copied</span>";
-    const open=openIds.has(p.id)?" open":"";
-    const stepsHtml=(p.steps||[]).length?'<div class="block"><div class="lab">Steps</div><ul class="steps">'+p.steps.map(s=>"<li>"+fmtStep(s,q)+"</li>").join("")+"</ul></div>":
-      (p.rawNotes?'<div class="block"><div class="lab">Raw notes</div><div class="raw">'+hl(p.rawNotes,q)+"</div></div>":'<div class="block"><div class="lab">Raw notes</div><div class="raw">(no steps yet — run Smart Assist)</div></div>');
-    const warnHtml=(p.warnings||[]).length?'<div class="block warn"><div class="lab">Watch-outs</div><ul>'+p.warnings.map(w=>"<li>"+esc(w)+"</li>").join("")+"</ul></div>":"";
-    const attachHtml=renderAttachBlock(p);
-    const related=findRelated(p.relatedTitles||[]).filter(r=>r.id!==p.id);
-    const relatedHtml=related.length?'<div class="block"><div class="lab">Related tickets</div><div class="related-list">'+related.map(r=>'<a class="related-link" data-goto="'+r.id+'">'+esc(r.title)+"</a>").join("")+"</div></div>":"";
-    const cs=(p.comments||[]).slice().sort((a,b)=>a.at-b.at);
-    const cList=cs.length?'<div class="clist">'+cs.map(c=>'<div class="cmt"><span class="cmt-who">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span><div class="cmt-txt">'+esc(c.text)+"</div></div>").join("")+"</div>":'<div class="cmt-empty">No comments yet — be the first.</div>';
-    const commentsHtml='<div class="block comments"><div class="lab">Comments ('+cs.length+')</div>'+cList+'<div class="crow"><input class="cinput" type="text" data-cid="'+p.id+'" placeholder="Add a comment…"><button class="mini csend" data-cid="'+p.id+'">Post</button></div></div>';
-    const statusBtns=p.status==="verified"?'<button class="mini" data-setstatus="'+p.id+'" data-newstatus="needs-review">↩ Mark needs review</button>':'<button class="mini verify-btn" data-verify="'+p.id+'">✓ Still works — verify</button>';
-    return '<article class="dossier'+open+'" data-id="'+p.id+'">'+
-      '<div class="doss-head" data-toggle="'+p.id+'">'+
-        '<div class="num">'+n+'</div>'+
-        '<div class="doss-title"><h3>'+hl(p.title,q)+(p.aiCleaned?'<span class="ai-pill">AI-cleaned</span>':'')+'</h3>'+(p.summary?'<p class="summary">'+hl(p.summary,q)+'</p>':'')+'<div class="tags">'+statusBadge(p)+' '+catTag+' '+attachBadge+' '+tags+'</div><div class="meta"><span>'+(p.steps||[]).length+' steps</span>'+est+by+cc+vc+'<span>updated '+dt+'</span></div></div>'+
-        '<div class="caret">▶</div>'+
-      '</div>'+
-      '<div class="body">'+listBlock("Tools & access",p.tools)+listBlock("Prerequisites",p.prerequisites)+stepsHtml+warnHtml+attachHtml+relatedHtml+commentsHtml+
-        '<div class="doss-tools"><button class="mini" data-copy="'+p.id+'">Copy steps</button>'+statusBtns+'<button class="mini" data-edit="'+p.id+'">Edit</button><button class="mini del" data-del="'+p.id+'">Delete</button></div>'+
-      '</div></article>';
-  }).join("");
+  if(!playbooks.length){list.innerHTML='<div class="empty"><div class="big">No tickets yet</div><p>Log your first how-to and Smart Assist will suit it up into clean, numbered steps.</p><button class="cta" style="max-width:220px;margin:0 auto" id="emptyCreate">⚡ Create a ticket</button></div>';$("#emptyCreate")?.addEventListener("click",()=>setView("create"));return;}
+  if(!shown.length){list.innerHTML='<div class="empty"><div class="big">No matches</div><p>Nothing matches those filters.</p></div>';return;}
+  renderTicketList(shown,q,list);
+  if(view==="mine")renderMine();
+}
+function renderMine(){
+  if(!myName){$("#mineList").innerHTML='<div class="empty"><div class="big">Set your name first</div><p>Click your name in the header to get started, then your tickets will appear here.</p></div>';$("#mineTotal").textContent="";$("#mineScope").textContent="";return;}
+  const mine=sortTickets(playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()));
+  $("#mineTotal").textContent=mine.length+(mine.length===1?" ticket":" tickets");
+  $("#mineScope").textContent="/ by "+myName;
+  if(!mine.length){$("#mineList").innerHTML='<div class="empty"><div class="big">No tickets by you yet</div><p>Create your first ticket and it\'ll show up here.</p></div>';return;}
+  renderTicketList(mine,"",$("#mineList"));
 }
 
 /* ---------- events ---------- */
@@ -936,64 +685,49 @@ $("#cancelEdit").addEventListener("click",()=>{stopEdit();resetForm();showMsg(""
 $("#exportBtn").addEventListener("click",doExport);
 $("#importBtn").addEventListener("click",()=>$("#importFile").click());
 $("#importFile").addEventListener("change",e=>{if(e.target.files[0])doImport(e.target.files[0]);e.target.value="";});
-$("#f-author").addEventListener("input",e=>{myName=e.target.value.trim();});
-$("#printBtn").addEventListener("click",()=>{
-  $$(".dossier").forEach(d=>d.classList.add("open"));
-  setTimeout(()=>window.print(),100);
-});
+$("#printBtn").addEventListener("click",()=>{$$(".dossier").forEach(d=>d.classList.add("open"));setTimeout(()=>window.print(),100);});
 $("#sortSelect").addEventListener("change",e=>{sortMode=e.target.value;render();});
 
-// filter bar delegation
-$("#filterBar").addEventListener("click",e=>{
-  const chip=e.target.closest(".filter-chip");if(!chip)return;
-  if(chip.dataset.cat!==undefined){
-    filterCat=chip.dataset.cat;
-    $$("[data-cat]").forEach(c=>c.classList.toggle("active",c.dataset.cat===filterCat));
-  }
-  if(chip.dataset.status!==undefined){
-    if(filterStatus===chip.dataset.status){filterStatus="";chip.classList.remove("status-active","s-"+chip.dataset.status);}
-    else{filterStatus=chip.dataset.status;$$("[data-status]").forEach(c=>{c.classList.remove("status-active","s-draft","s-needs-review","s-verified");if(c.dataset.status===filterStatus){c.classList.add("status-active","s-"+filterStatus);}});}
-  }
-  render();
-});
+// user identity
+$("#userBtn").addEventListener("click",showWelcome);
+$("#modal-name").addEventListener("input",e=>{$("#modal-save").disabled=!e.target.value.trim();});
+$("#modal-save").addEventListener("click",()=>{const n=$("#modal-name").value.trim();if(n){saveName(n);hideWelcome();toast("Welcome, "+n+"!");}});
+$("#modal-skip").addEventListener("click",hideWelcome);
+$("#modal-name").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();const n=e.target.value.trim();if(n){saveName(n);hideWelcome();toast("Welcome, "+n+"!");}}});
 
+// filter bar
+$("#filterBar").addEventListener("click",e=>{const chip=e.target.closest(".filter-chip");if(!chip)return;if(chip.dataset.cat!==undefined){filterCat=chip.dataset.cat;$$("[data-cat]").forEach(c=>c.classList.toggle("active",c.dataset.cat===filterCat));}if(chip.dataset.status!==undefined){if(filterStatus===chip.dataset.status){filterStatus="";chip.classList.remove("status-active","s-"+chip.dataset.status);}else{filterStatus=chip.dataset.status;$$("[data-status]").forEach(c=>{c.classList.remove("status-active","s-draft","s-needs-review","s-verified");if(c.dataset.status===filterStatus)c.classList.add("status-active","s-"+filterStatus);});}}render();});
+
+// file drop
 const drop=$("#drop"),fileInput=$("#f-file");
 drop.addEventListener("click",()=>fileInput.click());
-fileInput.addEventListener("change",e=>{
-  Array.from(e.target.files).forEach(f=>handleFile(f));
-  e.target.value="";
-});
+fileInput.addEventListener("change",e=>{Array.from(e.target.files).forEach(f=>handleFile(f));e.target.value="";});
 ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("over");}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("over");}));
 drop.addEventListener("drop",e=>{Array.from(e.dataTransfer.files).forEach(f=>handleFile(f));});
+$("#attachList").addEventListener("click",e=>{const rm=e.target.closest("[data-rm]");if(rm)removeAttach(rm.dataset.rm);});
+$("#saveKey").addEventListener("click",async()=>{const v=$("#f-key").value.trim();if(!v||!v.startsWith("sk-")){$("#keyState").textContent="Paste a valid key (starts with sk-).";return;}apiKey=v;await storeSet(KKEY,v);$("#f-key").value="";reflectKeyState();});
+$("#connectFb").addEventListener("click",async()=>{const raw=$("#f-fb").value.trim();if(!raw){$("#fbState").textContent="Paste your Firebase config first.";return;}let cfg;try{const s=raw.slice(raw.indexOf("{"),raw.lastIndexOf("}")+1);cfg=Function('"use strict";return ('+s+')')();}catch(e){$("#fbState").textContent="Couldn't read that config.";return;}if(!cfg?.projectId){$("#fbState").textContent="No projectId found.";return;}await storeSet(FBKEY,JSON.stringify(cfg));fbConfig=cfg;$("#fbState").textContent="Connecting…";const ok=await connectCloud(cfg);if(ok){$("#f-fb").value="";toast("Team sharing is on!");}});
 
-// Remove attachment chip
-$("#attachList").addEventListener("click",e=>{
-  const rm=e.target.closest("[data-rm]");
-  if(rm)removeAttach(rm.dataset.rm);
-});
-
-$("#saveKey").addEventListener("click",async()=>{const v=$("#f-key").value.trim();if(!v){$("#keyState").textContent="Paste your key first.";return;}if(!v.startsWith("sk-")){$("#keyState").textContent="That doesn't look like an Anthropic key (they start with sk-).";return;}apiKey=v;await storeSet(KKEY,v);$("#f-key").value="";reflectKeyState();});
-$("#connectFb").addEventListener("click",async()=>{
-  const raw=$("#f-fb").value.trim();if(!raw){$("#fbState").textContent="Paste your Firebase config first.";return;}
-  let cfg;try{const s=raw.slice(raw.indexOf("{"),raw.lastIndexOf("}")+1);cfg=Function('"use strict";return ('+s+')')();}catch(e){$("#fbState").textContent="Couldn't read that — paste the whole { ... } config object.";return;}
-  if(!cfg||!cfg.projectId){$("#fbState").textContent="That doesn't look like a Firebase config (no projectId).";return;}
-  await storeSet(FBKEY,JSON.stringify(cfg));fbConfig=cfg;$("#fbState").textContent="Connecting…";
-  const ok=await connectCloud(cfg);if(ok){$("#f-fb").value="";toast("Team sharing is on. Everyone with this config now shares tickets & comments.");}
-});
-
-$("#list").addEventListener("click",e=>{
-  const send=e.target.closest("[data-cid].csend");if(send){const inp=e.target.closest(".comments").querySelector(".cinput");addComment(send.dataset.cid,inp.value);inp.value="";return;}
+// ticket list delegation (works for both #list and #mineList)
+function handleListClick(e){
+  const send=e.target.closest("[data-cid].csend");if(send){const inp=e.target.closest(".comments").querySelector(".cinput");const tid=send.dataset.cid;const rs=replyState[tid];addComment(tid,inp.value,rs?.replyTo||null);inp.value="";return;}
+  const replyBtn=e.target.closest("[data-replyto]");if(replyBtn){const tid=replyBtn.dataset.replyticket;replyState[tid]={replyTo:replyBtn.dataset.replyto,replyAuthor:replyBtn.dataset.replyauthor};render();setTimeout(()=>{const inp=document.querySelector('.dossier[data-id="'+tid+'"] .cinput');if(inp)inp.focus();},50);return;}
+  const cancelReply=e.target.closest("[data-cancelreply]");if(cancelReply){delete replyState[cancelReply.dataset.cancelreply];render();return;}
   const dl=e.target.closest("[data-dlattach]");if(dl){downloadAttach(dl.dataset.dlticket,dl.dataset.dlattach);return;}
-  const goto=e.target.closest("[data-goto]");if(goto){const id=goto.dataset.goto;openIds.add(id);render();setTimeout(()=>{const el=document.querySelector('.dossier[data-id="'+id+'"]');if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},50);return;}
+  const goto=e.target.closest("[data-goto]");if(goto){const id=goto.dataset.goto;openIds.add(id);setView("browse");render();setTimeout(()=>{document.querySelector('.dossier[data-id="'+id+'"]')?.scrollIntoView({behavior:"smooth",block:"start"});},50);return;}
   const t=e.target.closest("[data-toggle]");if(t){const id=t.dataset.toggle;if(openIds.has(id))openIds.delete(id);else{openIds.add(id);trackView(id);}document.querySelector('.dossier[data-id="'+id+'"]')?.classList.toggle("open");return;}
   const v=e.target.closest("[data-verify]");if(v){verifyTicket(v.dataset.verify);return;}
   const ss=e.target.closest("[data-setstatus]");if(ss){setStatus(ss.dataset.setstatus,ss.dataset.newstatus);return;}
   const c=e.target.closest("[data-copy]");if(c){copySteps(c.dataset.copy);return;}
   const ed=e.target.closest("[data-edit]");if(ed){startEdit(ed.dataset.edit);return;}
   const d=e.target.closest("[data-del]");if(d){del(d.dataset.del);return;}
-});
-$("#list").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("cinput")){e.preventDefault();addComment(e.target.dataset.cid,e.target.value);e.target.value="";}});
+}
+function handleListKeydown(e){if(e.key==="Enter"&&e.target.classList.contains("cinput")){e.preventDefault();const tid=e.target.dataset.cid;const rs=replyState[tid];addComment(tid,e.target.value,rs?.replyTo||null);e.target.value="";}}
+$("#list").addEventListener("click",handleListClick);
+$("#list").addEventListener("keydown",handleListKeydown);
+$("#mineList").addEventListener("click",handleListClick);
+$("#mineList").addEventListener("keydown",handleListKeydown);
 
 load();
 </script>
