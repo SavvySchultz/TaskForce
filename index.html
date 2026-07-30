@@ -226,6 +226,8 @@
   .mini.verify-btn{color:var(--green);border-color:rgba(126,224,166,.4)}.mini.verify-btn:hover{background:rgba(126,224,166,.1)}
   .ai-pill{font-family:"Space Mono";font-size:9.5px;letter-spacing:.6px;color:var(--gold);border:1px solid rgba(255,201,77,.4);border-radius:20px;padding:2px 8px;text-transform:uppercase;margin-left:6px;vertical-align:middle}
   @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes popIn{from{opacity:0;transform:scale(.85) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
   .spin{display:inline-block;width:14px;height:14px;border:2.5px solid rgba(16,22,31,.35);border-top-color:#10161f;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:7px}
   .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--panel-2);border:1.5px solid var(--beacon);color:var(--ink);font-size:13px;padding:10px 16px;border-radius:10px;z-index:50;display:none;box-shadow:0 8px 30px rgba(0,0,0,.45);max-width:90vw}
   .toast.show{display:block}.toast.err{border-color:var(--signal);color:#ffcabd}
@@ -306,7 +308,7 @@
         <div class="row-2"><div><label>Category</label><select class="field-select" id="f-category"><option value="">— pick one —</option><option>Accounts & Passwords</option><option>Microsoft 365</option><option>Outlook</option><option>Teams</option><option>SharePoint</option><option>OneDrive</option><option>Applications / SSO Groups</option><option>Networking & VPN</option><option>Software & Apps</option><option>Hardware & Printers</option><option>Phones & Mobile</option><option>Security</option><option>Onboarding & Offboarding</option><option>Other</option></select></div><div><label>Est. time</label><select class="field-select" id="f-est"><option value="">— pick one —</option><option>< 5 min</option><option>5–15 min</option><option>15–30 min</option><option>30–60 min</option><option>1+ hour</option></select></div></div>
         <label>Status</label><select class="field-select" id="f-status"><option value="draft">Draft</option><option value="needs-review">Needs review</option><option value="verified">Verified</option></select>
         <label>Tags <span>(comma separated)</span></label><input type="text" id="f-tags" placeholder="active directory, accounts, password">
-        <label>Related tickets <span>(comma-separated titles)</span></label><input type="text" id="f-related" placeholder="e.g. VPN setup, reset MFA">
+        <label>Related guides <span>(comma-separated titles to link to)</span></label><input type="text" id="f-related" placeholder="e.g. VPN setup, reset MFA">
         <label>Notes</label><textarea id="f-notes" placeholder="How do you do this task? Paste steps, notes, bullet points — whatever you have. Use bullet points (- or •) and indentation for sub-steps."></textarea>
         <label>Attach files</label>
         <div class="drop" id="drop"><input type="file" id="f-file" accept=".txt,.md,.csv,.log,.pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,image/*" multiple hidden>📎 <b>Click or drop files.</b> Word, Excel, PDF, images, text.</div>
@@ -317,6 +319,7 @@
           <button class="ghost" id="assistBtn">⚡ Open Smart Assist</button>
         </div>
         <button class="link" id="cancelEdit" hidden>Cancel edit</button>
+        <div class="footnote" style="margin-top:18px">Smart Assist only reorganizes what you give it — it does not make things up. Always double-check before following steps in production.</div>
       </div></div>
     </div>
   </section>
@@ -330,7 +333,6 @@
     <div class="watch-head"><h2>My Guides <span id="mineScope"></span></h2><span class="count" id="mineTotal"></span></div>
     <div id="mineList"></div>
   </section>
-  <div class="footnote">Smart Assist only reorganizes what you give it — it does not make things up. Always double-check before following steps in production.</div>
 </div>
 <div class="toast" id="toast"></div>
 <script>
@@ -345,6 +347,32 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function rel(ts){const d=Date.now()-ts,m=Math.floor(d/60000);if(m<1)return"just now";if(m<60)return m+"m ago";const h=Math.floor(m/60);if(h<24)return h+"h ago";const dy=Math.floor(h/24);if(dy<7)return dy+"d ago";return new Date(ts).toLocaleDateString();}
 function toast(t,k){const el=$("#toast");el.textContent=t;el.className="toast show"+(k?" "+k:"");setTimeout(()=>el.className="toast",3200);}
+const SAVE_QUOTES=[
+  "🎉 Knowledge shared is knowledge squared!",
+  "⚡ Your team just got a little smarter.",
+  "🧠 Future you will thank present you.",
+  "✨ One less thing someone has to figure out alone.",
+  "🚀 That's how legends document things.",
+  "💪 Your team's hero moment, documented.",
+  "🌟 Someone's going to love you for this.",
+  "📚 The knowledge base grows stronger!",
+  "🏆 Another mystery solved and saved.",
+  "🎯 Clean, clear, and ready for the team.",
+  "🔥 IT support just leveled up.",
+  "💡 You just saved someone 30 minutes.",
+  "🙌 Teamwork makes the dream work!",
+  "⭐ Documented like a pro.",
+  "🎊 The next person won't have to guess!"
+];
+function celebrateSave(){
+  const q=SAVE_QUOTES[Math.floor(Math.random()*SAVE_QUOTES.length)];
+  const ov=document.createElement("div");
+  ov.style.cssText="position:fixed;inset:0;background:rgba(5,8,18,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);animation:fadeIn .2s ease";
+  ov.innerHTML='<div style="background:var(--panel);border:1.5px solid var(--green);border-radius:18px;padding:28px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);animation:popIn .3s ease"><div style="font-size:36px;margin-bottom:12px">✅</div><div style="font-family:Archivo;font-weight:900;font-size:18px;color:var(--ink);margin-bottom:8px">Guide saved!</div><div style="font-size:14px;color:var(--muted);line-height:1.5">'+esc(q)+'</div><button style="margin-top:16px;font-family:Archivo;font-weight:700;font-size:13px;color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:9px;padding:9px 24px;cursor:pointer" onclick="this.closest(\'div[style*=fixed]\').remove()">Nice!</button></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener("click",e=>{if(e.target===ov)ov.remove();});
+  setTimeout(()=>{if(ov.parentNode)ov.remove();},4500);
+}
 function fmtSize(b){if(b<1024)return b+" B";if(b<1048576)return(b/1024).toFixed(1)+" KB";return(b/1048576).toFixed(1)+" MB";}
 const TEXT_EXT=/\.(txt|md|csv|log)$/i,DOC_EXT=/\.(doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z)$/i,PDF_RE=/\.pdf$/i,IMG_RE=/\.(png|jpe?g|webp|gif|bmp|svg)$/i;
 function fileIcon(n){if(/\.docx?$/i.test(n))return"📄";if(/\.xlsx?$/i.test(n))return"📊";if(/\.pptx?$/i.test(n))return"📽";if(PDF_RE.test(n))return"📕";if(IMG_RE.test(n))return"🖼";return"📎";}
@@ -482,7 +510,7 @@ const savedAttach=pendingAttach.map(a=>({id:a.id,name:a.name,size:a.size,type:a.
 const now=Date.now();
 try{if(editingId){const ex=playbooks.find(p=>p.id===editingId)||{};pb.id=editingId;pb.createdAt=ex.createdAt||now;pb.updatedAt=now;pb.views=ex.views||0;pb.copies=ex.copies||0;pb.verifiedAt=ex.verifiedAt||0;pb.verifiedBy=ex.verifiedBy||"";pb.attachments=savedAttach;pb.comments=ex.comments||[];if(c.status==="verified"&&ex.status!=="verified"){pb.verifiedAt=now;pb.verifiedBy=name;}await updateTicketAPI(editingId,pb);stopEdit();}
 else{pb.id=uid();pb.createdAt=now;pb.updatedAt=now;pb.views=0;pb.copies=0;pb.verifiedAt=0;pb.verifiedBy="";pb.attachments=savedAttach;pb.comments=[];if(c.status==="verified"){pb.verifiedAt=now;pb.verifiedBy=name;}openIds.add("__new");await saveTicket(pb);}
-await loadTickets();resetForm();setView("browse");}catch(e){showMsg("Error saving: "+e.message,"err");}
+await loadTickets();resetForm();setView("browse");celebrateSave();}catch(e){showMsg("Error saving: "+e.message,"err");}
 }
 let saTone="professional",saResult=null;
 function openSA(){$("#createWrap").classList.add("assist-open");reflectKeyState();}
@@ -579,7 +607,7 @@ if(!tickets.length){container.innerHTML='<div class="empty"><div class="big">No 
 container.innerHTML=tickets.map((p,idx)=>{const n=String(idx+1).padStart(2,"0"),tags=(p.tags||[]).map(t=>'<span class="tag">#'+hl(t,q)+"</span>").join(""),catTag=p.category?'<span class="tag" style="color:var(--green);border-color:rgba(126,224,166,.35);background:rgba(126,224,166,.08)">'+esc(p.category)+"</span>":"",attachCt=(p.attachments||[]).length,attachBadge=attachCt?'<span class="attach-count-badge">📎 '+attachCt+"</span>":"",dt=new Date(p.updatedAt).toLocaleDateString(),by=p.author?' · <span class="by">by '+esc(p.author)+"</span>":"",cn=(p.comments||[]).length,cc=cn?'<span class="cc">💬 '+cn+"</span>":"",est=p.estTime?'<span class="est">⏱ '+esc(p.estTime)+"</span>":"",open=openIds.has(p.id)?" open":"";
 const stepsH=(p.steps||[]).length?'<div class="block"><div class="lab">Steps</div><ul class="steps">'+p.steps.map(s=>"<li>"+fmtStep(s,q)+"</li>").join("")+"</ul></div>":(p.rawNotes?'<div class="block"><div class="lab">Raw notes</div><div class="raw">'+hl(p.rawNotes,q)+"</div></div>":'<div class="block"><div class="lab">Notes</div><div class="raw">(no steps — run Smart Assist)</div></div>');
 const warnH=(p.warnings||[]).length?'<div class="block warn"><div class="lab">Watch-outs</div><ul>'+p.warnings.map(w=>"<li>"+esc(w)+"</li>").join("")+"</ul></div>":"";
-const related=findRelated(p.relatedTitles||[]).filter(r=>r.id!==p.id),relH=related.length?'<div class="block"><div class="lab">Related tickets</div><div class="related-list">'+related.map(r=>'<a class="related-link" data-goto="'+r.id+'">'+esc(r.title)+"</a>").join("")+"</div></div>":"";
+const related=findRelated(p.relatedTitles||[]).filter(r=>r.id!==p.id),relH=related.length?'<div class="block"><div class="lab">Related guides</div><div class="related-list">'+related.map(r=>'<a class="related-link" data-goto="'+r.id+'">'+esc(r.title)+"</a>").join("")+"</div></div>":"";
 const statusBtns=p.status==="verified"?'<button class="mini" data-setstatus="'+p.id+'" data-newstatus="needs-review">↩ Needs review</button>':'<button class="mini verify-btn" data-verify="'+p.id+'">✓ Verify</button>';
 return'<article class="dossier'+open+'" data-id="'+p.id+'"><div class="doss-head" data-toggle="'+p.id+'"><div class="num" style="background:'+getColorForUser(p.author)+'">'+n+'</div><div class="doss-title"><h3>'+hl(p.title,q)+(p.aiCleaned?'<span class="ai-pill">AI</span>':'')+'</h3>'+(p.summary?'<p class="summary">'+hl(p.summary,q)+'</p>':'')+'<div class="tags">'+statusBadge(p)+' '+catTag+' '+attachBadge+' '+tags+'</div><div class="meta"><span>'+(p.steps||[]).length+' steps</span>'+est+by+cc+'<span>'+dt+'</span></div></div><div class="caret">▶</div></div><div class="body">'+listBlock("Tools",p.tools)+listBlock("Prerequisites",p.prerequisites)+stepsH+warnH+renderAttachBlock(p)+relH+renderComments(p)+'<div class="doss-tools"><button class="mini" data-copy="'+p.id+'">Copy steps</button>'+statusBtns+'<button class="mini" data-edit="'+p.id+'">Edit</button><button class="mini del" data-del="'+p.id+'">Delete</button></div></div></article>';}).join("");}
 function setView(v){view=v;["create","browse","mine"].forEach(n=>{$("#view-"+n).classList.toggle("active",v===n);$("#tab-"+n).classList.toggle("active",v===n);});window.scrollTo({top:0,behavior:"smooth"});if(v==="mine")renderMine();}
