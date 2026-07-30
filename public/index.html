@@ -37,6 +37,16 @@
   .modal .modal-cta{width:100%;font-family:"Archivo";font-weight:900;font-size:16px;color:#10161f;background:var(--gold);border:none;padding:14px;border-radius:11px;cursor:pointer;margin-top:16px;box-shadow:0 5px 0 #b9902b}
   .modal .modal-cta:disabled{opacity:.5;cursor:not-allowed}
   .modal .modal-skip{display:block;margin:14px auto 0;background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;text-decoration:underline}
+  .color-label{font-family:"Archivo";font-weight:700;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;text-align:center}
+  .color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 auto;max-width:280px}
+  .color-swatch{width:100%;aspect-ratio:1;border-radius:10px;border:2.5px solid transparent;cursor:pointer;transition:.15s;position:relative;display:grid;place-items:center}
+  .color-swatch:hover{transform:scale(1.1);z-index:1}
+  .color-swatch.selected{border-color:var(--ink);box-shadow:0 0 0 3px rgba(234,240,255,.3)}
+  .color-swatch.taken{cursor:not-allowed;opacity:.4}
+  .color-swatch.taken::after{content:"";position:absolute;width:70%;height:3px;background:var(--ink);border-radius:2px;transform:rotate(-45deg)}
+  .color-swatch.taken:hover{transform:none}
+  .color-swatch .taken-by{display:none;position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-family:"Space Mono";font-size:9px;color:var(--muted);white-space:nowrap;background:var(--bg-deep);padding:2px 6px;border-radius:4px;border:1px solid var(--line);z-index:2}
+  .color-swatch.taken:hover .taken-by{display:block}
   .tabs{display:flex;gap:6px;margin:26px 0 24px;border-bottom:1.5px solid var(--line);overflow-x:auto}
   .tab{font-family:"Archivo";font-weight:800;font-size:15px;letter-spacing:.3px;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;padding:12px 18px;margin-bottom:-1.5px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
   .tab:hover{color:var(--ink)}.tab.active{color:var(--ink);border-bottom-color:var(--signal)}
@@ -226,9 +236,11 @@
 <div class="modal-overlay hidden" id="welcomeModal">
   <div class="modal">
     <h2><span class="wave">👋</span> Welcome to TaskForce</h2>
-    <p class="sub">Set your name so your team knows who wrote each guide and comment.</p>
+    <p class="sub">Set your name and pick a color so your team can tell who's who.</p>
     <label>Your name</label>
     <input type="text" id="modal-name" placeholder="e.g. Alex Rivera" autocomplete="off">
+    <div class="color-label">Pick your color</div>
+    <div class="color-grid" id="colorGrid"></div>
     <button class="modal-cta" id="modal-save" disabled>Let's go</button>
     <button class="modal-skip" id="modal-skip">Skip for now</button>
   </div>
@@ -355,10 +367,49 @@ function fmtStep(text,q){
   }
   if(q){const terms=q.split(/\s+/).filter(Boolean).map(t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));if(terms.length)s=s.replace(new RegExp("("+terms.join("|")+")","gi"),"<mark>$1</mark>");}
   return s;}
-function updateUserUI(){const av=$("#userAvatar"),un=$("#userName");if(myName){av.textContent=myName.charAt(0).toUpperCase();un.textContent=myName;}else{av.textContent="?";un.textContent="Set your name";}}
-function showWelcome(){$("#welcomeModal").classList.remove("hidden");$("#modal-name").focus();}
+function updateUserUI(){const av=$("#userAvatar"),un=$("#userName");if(myName){av.textContent=myName.charAt(0).toUpperCase();av.style.background=myColor||'var(--gold)';un.textContent=myName;}else{av.textContent="?";av.style.background='var(--gold)';un.textContent="Set your name";}}
+function showWelcome(){$("#welcomeModal").classList.remove("hidden");$("#modal-name").value=myName||'';renderColorGrid();$("#modal-name").focus();}
 function hideWelcome(){$("#welcomeModal").classList.add("hidden");}
 function requireName(){if(myName)return myName;showWelcome();return null;}
+
+// ===== COLOR SYSTEM =====
+const PALETTE=[
+  '#FF6B6B','#FF8E53','#FFC94D','#FFE66D','#A3E635',
+  '#88D498','#34D399','#4ECDC4','#22D3EE','#45B7D1',
+  '#3DA9FC','#818CF8','#6C63FF','#A855F7','#D946EF',
+  '#E879F9','#F472B6','#FB7185','#F97316','#EF4444'
+];
+let myColor='',teamUsers=[],selectedColor='';
+
+async function loadTeamUsers(){
+  if(!useDB)return;
+  try{const r=await fetch(API+'/users');teamUsers=await r.json();}catch{teamUsers=[];}
+}
+function getColorForUser(name){
+  if(!name)return'var(--gold)';
+  if(name.toLowerCase()===myName.toLowerCase()&&myColor)return myColor;
+  const u=teamUsers.find(u=>u.name.toLowerCase()===name.toLowerCase());
+  return u?u.color:'var(--gold)';
+}
+function renderColorGrid(){
+  const grid=$("#colorGrid");
+  const taken={};
+  teamUsers.forEach(u=>{if(u.name.toLowerCase()!==myName.toLowerCase())taken[u.color]=u.name;});
+  const current=myColor||selectedColor;
+  grid.innerHTML=PALETTE.map(c=>{
+    const isTaken=!!taken[c];
+    const isSelected=c===current;
+    return '<div class="color-swatch'+(isTaken?' taken':'')+(isSelected?' selected':'')+'" data-color="'+c+'" style="background:'+c+'">'+(isTaken?'<span class="taken-by">'+esc(taken[c])+'</span>':'')+'</div>';
+  }).join('');
+}
+async function claimColor(color){
+  if(!myName)return;
+  if(useDB){
+    try{const r=await fetch(API+'/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:myName,color})});
+    const d=await r.json();if(d.error){toast(d.error,"err");return false;}}catch(e){toast("Couldn't save color: "+e.message,"err");return false;}
+  }
+  myColor=color;lsSet('tf:color',color);updateUserUI();return true;
+}
 
 // ===== STORAGE (localStorage for name/key, API for tickets) =====
 function lsGet(k){try{return localStorage.getItem(k)}catch{return null}}
@@ -400,12 +451,11 @@ async function postComment(ticketId,c){
 
 // ===== INIT =====
 async function load(){
-  myName=lsGet('tf:name')||'';updateUserUI();
+  myName=lsGet('tf:name')||'';myColor=lsGet('tf:color')||'';updateUserUI();
   apiKey=lsGet('tf:apikey')||'';reflectKeyState();
-  await checkDB();await loadTickets();buildCatFilters();
+  await checkDB();await loadTeamUsers();await loadTickets();buildCatFilters();
   if(!myName)setTimeout(showWelcome,600);
-  // poll for updates every 15s when using DB
-  if(useDB)setInterval(()=>loadTickets(),15000);
+  if(useDB)setInterval(async()=>{await loadTeamUsers();await loadTickets();},15000);
 }
 function saveName(n){myName=n;lsSet('tf:name',n);updateUserUI();}
 function reflectKeyState(){const el=$("#keyState");if(apiKey){el.innerHTML='Key saved ✓ · <a id="rmKey">remove</a>';$("#saKeybox").style.display="none";document.getElementById("rmKey")?.addEventListener("click",()=>{apiKey="";localStorage.removeItem('tf:apikey');reflectKeyState();});}else{el.textContent="No key set.";try{$("#saKeybox").style.display="block";}catch(e){}}}
@@ -519,8 +569,8 @@ function renderAttachBlock(p){const att=p.attachments||[];if(!att.length)return"
 function renderComments(p){const all=(p.comments||[]).slice().sort((a,b)=>a.at-b.at),top=all.filter(c=>!c.replyTo),rMap={};all.filter(c=>c.replyTo).forEach(c=>{if(!rMap[c.replyTo])rMap[c.replyTo]=[];rMap[c.replyTo].push(c);});const rs=replyState[p.id],ctx=rs?'<div class="crow-context">↳ Replying to '+esc(rs.author)+' <button class="cancel-reply" data-cancelreply="'+p.id+'">✕</button></div>':"";
 let h='<div class="block comments"><div class="lab">Comments ('+all.length+')</div>';
 if(!all.length)h+='<div class="cmt-empty">No comments yet.</div>';
-else{h+='<div class="clist">';top.forEach(c=>{const mine=myName&&c.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(mine?" mine":"")+'"><div class="cmt-head"><span class="cmt-who">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(c.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(c.text)+'</div>';
-const replies=rMap[c.id]||[];if(replies.length){h+='<div class="cmt-replies">';replies.forEach(r=>{const rm=myName&&r.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(rm?" mine":"")+'"><div class="cmt-head"><span class="cmt-who">'+esc(r.author)+'</span><span class="cmt-when">'+rel(r.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(r.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(r.text)+'</div></div>';});h+='</div>';}h+='</div>';});h+='</div>';}
+else{h+='<div class="clist">';top.forEach(c=>{const mine=myName&&c.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(mine?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(c.author)+'">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(c.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(c.text)+'</div>';
+const replies=rMap[c.id]||[];if(replies.length){h+='<div class="cmt-replies">';replies.forEach(r=>{const rm=myName&&r.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(rm?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(r.author)+'">'+esc(r.author)+'</span><span class="cmt-when">'+rel(r.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(r.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(r.text)+'</div></div>';});h+='</div>';}h+='</div>';});h+='</div>';}
 h+=ctx+'<div class="crow"><input class="cinput" type="text" data-cid="'+p.id+'" placeholder="'+(rs?"Reply to "+rs.author+"…":"Add a comment…")+'"><button class="mini csend" data-cid="'+p.id+'">Post</button></div></div>';return h;}
 function sortTickets(arr){switch(sortMode){case"alpha":return arr.slice().sort((a,b)=>a.title.localeCompare(b.title));case"most-viewed":return arr.slice().sort((a,b)=>(b.views||0)-(a.views||0));default:return arr.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));}}
 function findRelated(titles){if(!titles?.length)return[];const r=[];titles.forEach(term=>{const t=term.toLowerCase();playbooks.forEach(p=>{if(p.title.toLowerCase().includes(t)||(p.tags||[]).some(tag=>tag.includes(t)))if(!r.find(x=>x.id===p.id))r.push(p);});});return r;}
@@ -553,10 +603,12 @@ $$(".sa-tone").forEach(t=>t.addEventListener("click",()=>{$$(".sa-tone").forEach
 $("#cancelEdit").addEventListener("click",()=>{stopEdit();resetForm();showMsg("");setView("browse");});
 $("#sortSelect").addEventListener("change",e=>{sortMode=e.target.value;render();});
 $("#userBtn").addEventListener("click",showWelcome);
-$("#modal-name").addEventListener("input",e=>$("#modal-save").disabled=!e.target.value.trim());
-$("#modal-save").addEventListener("click",()=>{const n=$("#modal-name").value.trim();if(n){saveName(n);hideWelcome();toast("Welcome, "+n+"!");render();}});
+$("#modal-name").addEventListener("input",e=>{const hasName=!!e.target.value.trim();const hasColor=!!selectedColor||!!myColor;$("#modal-save").disabled=!(hasName&&hasColor);});
+$("#modal-save").addEventListener("click",async()=>{const n=$("#modal-name").value.trim();const c=selectedColor||myColor;if(n&&c){saveName(n);const ok=await claimColor(c);if(ok!==false){hideWelcome();toast("Welcome, "+n+"!");render();}}});
 $("#modal-skip").addEventListener("click",hideWelcome);
-$("#modal-name").addEventListener("keydown",e=>{if(e.key==="Enter"){const n=e.target.value.trim();if(n){saveName(n);hideWelcome();toast("Welcome, "+n+"!");render();}}});
+$("#modal-name").addEventListener("keydown",async e=>{if(e.key==="Enter"){const n=e.target.value.trim();const c=selectedColor||myColor;if(n&&c){saveName(n);await claimColor(c);hideWelcome();toast("Welcome, "+n+"!");render();}}});
+// Color grid click
+document.addEventListener("click",e=>{const sw=e.target.closest(".color-swatch");if(!sw||sw.classList.contains("taken"))return;selectedColor=sw.dataset.color;renderColorGrid();const hasName=!!$("#modal-name").value.trim();$("#modal-save").disabled=!(hasName&&selectedColor);});
 $("#filterBar").addEventListener("click",e=>{const ch=e.target.closest(".filter-chip");if(!ch)return;if(ch.dataset.cat!==undefined){filterCat=ch.dataset.cat;$$("[data-cat]").forEach(c=>c.classList.toggle("active",c.dataset.cat===filterCat));}if(ch.dataset.status!==undefined){if(filterStatus===ch.dataset.status){filterStatus="";ch.classList.remove("status-active","s-"+ch.dataset.status);}else{filterStatus=ch.dataset.status;$$("[data-status]").forEach(c=>{c.classList.remove("status-active","s-draft","s-needs-review","s-verified");if(c.dataset.status===filterStatus)c.classList.add("status-active","s-"+filterStatus);});}}render();});
 const drop=$("#drop"),fi=$("#f-file");
 drop.addEventListener("click",()=>fi.click());
