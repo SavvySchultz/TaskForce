@@ -71,6 +71,14 @@ async function initDB() {
       ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
     `);
 
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        name VARCHAR(200) PRIMARY KEY,
+        color VARCHAR(20) NOT NULL,
+        updatedAt BIGINT NOT NULL
+      ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+    `);
+
     conn.release();
     console.log('Database connected and tables ready.');
   } catch (err) {
@@ -97,6 +105,37 @@ app.get('/api/status', async (req, res) => {
     res.json({ db: true, message: 'Connected' });
   } catch (e) {
     res.json({ db: false, message: e.message });
+  }
+});
+
+// GET all users (for color claims)
+app.get('/api/users', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    const [rows] = await pool.query('SELECT name, color FROM users');
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST claim a color
+app.post('/api/users', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    const { name, color } = req.body;
+    if (!name || !color) return res.status(400).json({ error: 'Name and color required' });
+    // Check if color is taken by someone else
+    const [existing] = await pool.query('SELECT name FROM users WHERE color=? AND name!=?', [color, name]);
+    if (existing.length) return res.status(409).json({ error: 'Color taken by ' + existing[0].name });
+    // Upsert
+    await pool.query(
+      'INSERT INTO users (name, color, updatedAt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE color=?, updatedAt=?',
+      [name, color, Date.now(), color, Date.now()]
+    );
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
