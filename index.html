@@ -178,8 +178,8 @@
   .inline-list{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:7px}
   .inline-list li{font-family:"Space Mono";font-size:11.5px;color:var(--ink);background:var(--panel-2);border:1px solid var(--line);border-radius:7px;padding:4px 9px}
   .steps{margin:0;padding:0;list-style:none;counter-reset:s}
-  .steps li{position:relative;padding:8px 0 8px 42px;border-bottom:1px dashed rgba(44,58,94,.6);font-size:14px;line-height:1.6}.steps li:last-child{border-bottom:none}
-  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:7px;width:27px;height:27px;border-radius:7px;background:var(--signal);color:#150a06;font-family:"Archivo";font-weight:900;font-size:13px;display:grid;place-items:center}
+  .steps>li{position:relative;padding:8px 0 8px 42px;border-bottom:1px dashed rgba(44,58,94,.6);font-size:14px;line-height:1.6}.steps>li:last-child{border-bottom:none}
+  .steps>li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:7px;width:27px;height:27px;border-radius:7px;background:var(--signal);color:#150a06;font-family:"Archivo";font-weight:900;font-size:13px;display:grid;place-items:center}
   .steps li code{font-family:"Space Mono";font-size:12px;background:var(--bg-deep);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--beacon);word-break:break-all}
   .steps li .sub-steps{margin:6px 0 2px 4px;padding:0;list-style:none;counter-reset:sub}
   .steps li .sub-steps li{padding:3px 0 3px 24px;border-bottom:none;font-size:13px;position:relative}
