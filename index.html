@@ -354,7 +354,6 @@
       <button class="vt-btn" data-mode="folders">📁 Folders</button>
     </div>
     <div id="listMode">
-      <div class="filter-bar" id="filterBar"><span class="filter-label">Category</span><button class="filter-chip active" data-cat="">All</button><span class="filter-label" style="margin-left:12px">Status</span><button class="filter-chip" data-status="draft">Draft</button><button class="filter-chip" data-status="needs-review">Needs review</button><button class="filter-chip" data-status="verified">Verified</button><select class="sort-select" id="sortSelect"><option value="newest">Sort: Newest</option><option value="alpha">Sort: A → Z</option><option value="most-viewed">Sort: Most viewed</option></select></div>
       <div class="watch-head"><h2>Knowledge Base <span id="scope">/ all guides</span></h2><span class="count" id="count">0 guides</span></div>
       <div id="list"></div>
     </div>
@@ -379,7 +378,7 @@
 // ===== CONFIG =====
 const API=window.location.origin+'/api';
 let playbooks=[],query="",editingId=null,myName="",apiKey="",view="browse";
-let openIds=new Set(),filterCat="",filterStatus="",sortMode="newest";
+let openIds=new Set(),sortMode="newest";
 let browseMode="list",openFolderCat=null;
 let pendingAttach=[],aiFile=null,replyState={},useDB=false;
 
@@ -522,7 +521,7 @@ async function postComment(ticketId,c){
 async function load(){
   myName=lsGet('tf:name')||'';myColor=lsGet('tf:color')||'';updateUserUI();
   apiKey=lsGet('tf:apikey')||'';reflectKeyState();
-  await checkDB();await loadTeamUsers();await loadTickets();buildCatFilters();
+  await checkDB();await loadTeamUsers();await loadTickets();
   if(!myName)setTimeout(showWelcome,600);
   if(useDB)setInterval(async()=>{await loadTeamUsers();await loadTickets();},15000);
 }
@@ -530,7 +529,29 @@ function saveName(n){myName=n;lsSet('tf:name',n);updateUserUI();}
 function reflectKeyState(){const el=$("#keyState");if(apiKey){el.innerHTML='Key saved ✓ · <a id="rmKey">remove</a>';$("#saKeybox").style.display="none";document.getElementById("rmKey")?.addEventListener("click",()=>{apiKey="";localStorage.removeItem('tf:apikey');reflectKeyState();});}else{el.textContent="No key set.";try{$("#saKeybox").style.display="block";}catch(e){}}}
 
 const CATEGORIES=["Accounts & Passwords","Microsoft 365","Outlook","Teams","SharePoint","OneDrive","Applications / SSO Groups","Networking & VPN","Software & Apps","Hardware & Printers","Phones & Mobile","Security","Onboarding & Offboarding","Other"];
-function buildCatFilters(){const used=new Set(playbooks.map(p=>p.category).filter(Boolean));const bar=$("#filterBar");bar.querySelectorAll("[data-cat]").forEach(el=>el.remove());const ref=bar.querySelector("[data-status]");const lbl=bar.querySelector(".filter-label");const a=document.createElement("button");a.className="filter-chip"+(filterCat===""?" active":"");a.dataset.cat="";a.textContent="All";if(lbl&&lbl.nextSibling)bar.insertBefore(a,lbl.nextSibling);else bar.insertBefore(a,ref);CATEGORIES.filter(c=>used.has(c)).forEach(c=>{const ch=document.createElement("button");ch.className="filter-chip"+(filterCat===c?" active":"");ch.dataset.cat=c;ch.textContent=c;bar.insertBefore(ch,ref);});}
+function buildCatFilters(){
+  // Get all unique categories actually used in the data
+  const used=new Set(playbooks.map(p=>(p.category||"").trim()).filter(Boolean));
+  const bar=$("#filterBar");
+  bar.querySelectorAll("[data-cat]").forEach(el=>el.remove());
+  // Find the Status label as insertion boundary
+  const statusLabels=bar.querySelectorAll(".filter-label");
+  const statusLabel=statusLabels.length>1?statusLabels[1]:null;
+  const ref=statusLabel||bar.querySelector("[data-status]")||bar.querySelector(".sort-select");
+  // Create "All" chip
+  const a=document.createElement("button");
+  a.className="filter-chip"+(filterCat===""?" active":"");
+  a.dataset.cat="";a.textContent="All";
+  bar.insertBefore(a,ref);
+  // Add chips for each used category — prefer CATEGORIES order, then any extras
+  const ordered=[...CATEGORIES.filter(c=>used.has(c)),...[...used].filter(c=>!CATEGORIES.includes(c)).sort()];
+  ordered.forEach(c=>{
+    const ch=document.createElement("button");
+    ch.className="filter-chip"+(filterCat===c?" active":"");
+    ch.dataset.cat=c;ch.textContent=c;
+    bar.insertBefore(ch,ref);
+  });
+}
 
 // ===== AI =====
 const SYSTEM='You are Smart Assist. Take messy IT notes and return ONLY raw JSON: {"title":string,"summary":string,"tags":string[],"tools":string[],"prerequisites":string[],"steps":string[],"warnings":string[],"category":string,"estTime":string}. Reorganize only what is provided. Do NOT invent. Wrap commands in backticks. Each step is one main action. If a step has sub-details, options, or bullet points, include them INSIDE that step string using newline characters (\\n) with bullet markers like "\\n  • sub-item". Do NOT make sub-bullets into separate numbered steps. category from: Accounts & Passwords, Microsoft 365, Outlook, Teams, SharePoint, OneDrive, Applications / SSO Groups, Networking & VPN, Software & Apps, Hardware & Printers, Phones & Mobile, Security, Onboarding & Offboarding, Other. estTime from: < 5 min, 5-15 min, 15-30 min, 30-60 min, 1+ hour.';
@@ -652,11 +673,11 @@ const related=findRelated(p.relatedTitles||[]).filter(r=>r.id!==p.id),relH=relat
 const statusBtns=p.status==="verified"?'<button class="mini" data-setstatus="'+p.id+'" data-newstatus="needs-review">↩ Needs review</button>':'<button class="mini verify-btn" data-verify="'+p.id+'">✓ Verify</button>';
 return'<article class="dossier'+open+'" data-id="'+p.id+'"><div class="doss-head" data-toggle="'+p.id+'"><div class="num" style="background:'+getColorForUser(p.author)+'">'+n+'</div><div class="doss-title"><h3>'+hl(p.title,q)+(p.aiCleaned?'<span class="ai-pill">AI</span>':'')+'</h3>'+(p.summary?'<p class="summary">'+hl(p.summary,q)+'</p>':'')+'<div class="tags">'+statusBadge(p)+' '+catTag+' '+attachBadge+' '+tags+'</div><div class="meta"><span>'+(p.steps||[]).length+' steps</span>'+est+by+cc+'<span>'+dt+'</span></div></div><div class="caret">▶</div></div><div class="body">'+listBlock("Tools",p.tools)+listBlock("Prerequisites",p.prerequisites)+stepsH+warnH+renderAttachBlock(p)+relH+renderComments(p)+'<div class="doss-tools"><button class="mini" data-copy="'+p.id+'">Copy steps</button>'+statusBtns+'<button class="mini" data-edit="'+p.id+'">Edit</button><button class="mini del" data-del="'+p.id+'">Delete</button></div></div></article>';}).join("");}
 function setView(v){view=v;["create","browse","mine"].forEach(n=>{$("#view-"+n).classList.toggle("active",v===n);$("#tab-"+n).classList.toggle("active",v===n);});window.scrollTo({top:0,behavior:"smooth"});if(v==="mine")renderMine();}
-function render(){const q=query.trim();let f=playbooks.filter(p=>matches(p,q));if(filterCat)f=f.filter(p=>p.category===filterCat);if(filterStatus)f=f.filter(p=>p.status===filterStatus);const shown=sortTickets(f);
+function render(){const q=query.trim();let f=playbooks.filter(p=>matches(p,q));const shown=sortTickets(f);
 $("#count").textContent=playbooks.length+(playbooks.length===1?" guide":" guides");$("#tabCount").textContent=playbooks.length;
 const mine=myName?playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()):[];$("#mineCount").textContent=mine.length;
 if(openIds.has("__new")&&shown[0]){openIds.delete("__new");openIds.add(shown[0].id);}
-renderTicketList(shown,q,$("#list"));buildCatFilters();
+renderTicketList(shown,q,$("#list"));
 if(browseMode==="folders")renderFolders();
 if(view==="mine")renderMine();}
 function renderMine(){if(!myName){$("#mineList").innerHTML='<div class="empty"><div class="big">Set your name first</div><p>Click your name in the header to get started.</p></div>';return;}const mine=sortTickets(playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()));$("#mineTotal").textContent=mine.length+" guide"+(mine.length===1?"":"s");$("#mineScope").textContent="/ by "+myName;renderTicketList(mine,"",$("#mineList"));}
@@ -738,7 +759,6 @@ $("#saAccept").addEventListener("click",acceptSA);
 $("#saRetry").addEventListener("click",doAssist);
 $$(".sa-tone").forEach(t=>t.addEventListener("click",()=>{$$(".sa-tone").forEach(b=>b.classList.remove("active"));t.classList.add("active");saTone=t.dataset.tone;}));
 $("#cancelEdit").addEventListener("click",()=>{stopEdit();resetForm();showMsg("");setView("browse");});
-$("#sortSelect").addEventListener("change",e=>{sortMode=e.target.value;render();});
 // View toggle (list/folders)
 $("#viewToggle").addEventListener("click",e=>{const btn=e.target.closest(".vt-btn");if(btn)setBrowseMode(btn.dataset.mode);});
 // Folder card clicks
@@ -755,7 +775,7 @@ $("#modal-skip").addEventListener("click",hideWelcome);
 $("#modal-name").addEventListener("keydown",async e=>{if(e.key==="Enter"){const n=e.target.value.trim();const c=selectedColor||myColor;if(n&&c){saveName(n);await claimColor(c);hideWelcome();toast("Welcome, "+n+"!");render();}}});
 // Color grid click
 document.addEventListener("click",e=>{const sw=e.target.closest(".color-swatch");if(!sw||sw.classList.contains("taken"))return;selectedColor=sw.dataset.color;renderColorGrid();const hasName=!!$("#modal-name").value.trim();$("#modal-save").disabled=!(hasName&&selectedColor);});
-$("#filterBar").addEventListener("click",e=>{const ch=e.target.closest(".filter-chip");if(!ch)return;if(ch.dataset.cat!==undefined){filterCat=ch.dataset.cat;$$("[data-cat]").forEach(c=>c.classList.toggle("active",c.dataset.cat===filterCat));}if(ch.dataset.status!==undefined){if(filterStatus===ch.dataset.status){filterStatus="";ch.classList.remove("status-active","s-"+ch.dataset.status);}else{filterStatus=ch.dataset.status;$$("[data-status]").forEach(c=>{c.classList.remove("status-active","s-draft","s-needs-review","s-verified");if(c.dataset.status===filterStatus)c.classList.add("status-active","s-"+filterStatus);});}}render();});
+// Removed filter bar - using folders for organization
 const drop=$("#drop"),fi=$("#f-file");
 drop.addEventListener("click",()=>fi.click());
 fi.addEventListener("change",e=>{Array.from(e.target.files).forEach(f=>handleFile(f));e.target.value="";});
