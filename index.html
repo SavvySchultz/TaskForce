@@ -232,6 +232,30 @@
   .toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--panel-2);border:1.5px solid var(--beacon);color:var(--ink);font-size:13px;padding:10px 16px;border-radius:10px;z-index:50;display:none;box-shadow:0 8px 30px rgba(0,0,0,.45);max-width:90vw}
   .toast.show{display:block}.toast.err{border-color:var(--signal);color:#ffcabd}
   .footnote{color:#54608a;font-size:12px;margin-top:26px;text-align:center;font-family:"Space Mono"}
+
+  /* View toggle */
+  .view-toggle{display:flex;gap:2px;background:var(--panel-2);border:1.5px solid var(--line);border-radius:10px;padding:3px;margin-bottom:14px;width:fit-content}
+  .vt-btn{font-family:"Archivo";font-weight:700;font-size:12.5px;color:var(--muted);background:none;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+  .vt-btn:hover{color:var(--ink)}
+  .vt-btn.active{color:var(--ink);background:var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+  /* Folder grid */
+  .folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:10px}
+  .folder-card{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--radius);padding:20px 18px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+  .folder-card:hover{border-color:var(--beacon);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  .folder-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;border-radius:14px 14px 0 0}
+  .folder-icon{font-size:28px;margin-bottom:10px}
+  .folder-name{font-family:"Archivo";font-weight:800;font-size:15px;color:var(--ink);margin-bottom:4px}
+  .folder-count{font-family:"Space Mono";font-size:11.5px;color:var(--muted);margin-bottom:10px}
+  .folder-latest{font-size:12px;color:#5f6d94;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .folder-latest b{color:var(--muted);font-weight:500}
+
+  /* Folder open header */
+  .folder-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .folder-back{font-family:"Archivo";font-weight:700;font-size:13px;color:var(--muted);background:var(--panel);border:1.5px solid var(--line);border-radius:9px;padding:8px 14px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
+  .folder-back:hover{border-color:var(--beacon);color:var(--beacon)}
+  .folder-header h2{font-family:"Archivo";font-weight:900;font-size:20px;margin:0;display:flex;align-items:center;gap:10px}
+  .folder-header .f-count{font-family:"Space Mono";font-size:12px;color:var(--muted);font-weight:400}
 </style>
 </head>
 <body>
@@ -325,9 +349,25 @@
   </section>
   <section class="view active" id="view-browse">
     <div class="command-bar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A97BE" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="search" placeholder="Search by task, #tag, tool, or keyword…" autocomplete="off"></div>
-    <div class="filter-bar" id="filterBar"><span class="filter-label">Category</span><button class="filter-chip active" data-cat="">All</button><span class="filter-label" style="margin-left:12px">Status</span><button class="filter-chip" data-status="draft">Draft</button><button class="filter-chip" data-status="needs-review">Needs review</button><button class="filter-chip" data-status="verified">Verified</button><select class="sort-select" id="sortSelect"><option value="newest">Sort: Newest</option><option value="alpha">Sort: A → Z</option><option value="most-viewed">Sort: Most viewed</option></select></div>
-    <div class="watch-head"><h2>Knowledge Base <span id="scope">/ all guides</span></h2><span class="count" id="count">0 guides</span></div>
-    <div id="list"></div>
+    <div class="view-toggle" id="viewToggle">
+      <button class="vt-btn active" data-mode="list">📋 List</button>
+      <button class="vt-btn" data-mode="folders">📁 Folders</button>
+    </div>
+    <div id="listMode">
+      <div class="filter-bar" id="filterBar"><span class="filter-label">Category</span><button class="filter-chip active" data-cat="">All</button><span class="filter-label" style="margin-left:12px">Status</span><button class="filter-chip" data-status="draft">Draft</button><button class="filter-chip" data-status="needs-review">Needs review</button><button class="filter-chip" data-status="verified">Verified</button><select class="sort-select" id="sortSelect"><option value="newest">Sort: Newest</option><option value="alpha">Sort: A → Z</option><option value="most-viewed">Sort: Most viewed</option></select></div>
+      <div class="watch-head"><h2>Knowledge Base <span id="scope">/ all guides</span></h2><span class="count" id="count">0 guides</span></div>
+      <div id="list"></div>
+    </div>
+    <div id="folderMode" style="display:none">
+      <div id="folderGrid" class="folder-grid"></div>
+      <div id="folderOpen" style="display:none">
+        <div class="folder-header">
+          <button class="folder-back" id="folderBack">← All Folders</button>
+          <h2><span id="folderOpenIcon"></span> <span id="folderOpenName"></span> <span class="f-count" id="folderOpenCount"></span></h2>
+        </div>
+        <div id="folderList"></div>
+      </div>
+    </div>
   </section>
   <section class="view" id="view-mine">
     <div class="watch-head"><h2>My Guides <span id="mineScope"></span></h2><span class="count" id="mineTotal"></span></div>
@@ -340,6 +380,7 @@
 const API=window.location.origin+'/api';
 let playbooks=[],query="",editingId=null,myName="",apiKey="",view="browse";
 let openIds=new Set(),filterCat="",filterStatus="",sortMode="newest";
+let browseMode="list",openFolderCat=null;
 let pendingAttach=[],aiFile=null,replyState={},useDB=false;
 
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
@@ -615,12 +656,80 @@ function render(){const q=query.trim();let f=playbooks.filter(p=>matches(p,q));i
 $("#count").textContent=playbooks.length+(playbooks.length===1?" guide":" guides");$("#tabCount").textContent=playbooks.length;
 const mine=myName?playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()):[];$("#mineCount").textContent=mine.length;
 if(openIds.has("__new")&&shown[0]){openIds.delete("__new");openIds.add(shown[0].id);}
-renderTicketList(shown,q,$("#list"));buildCatFilters();if(view==="mine")renderMine();}
+renderTicketList(shown,q,$("#list"));buildCatFilters();
+if(browseMode==="folders")renderFolders();
+if(view==="mine")renderMine();}
 function renderMine(){if(!myName){$("#mineList").innerHTML='<div class="empty"><div class="big">Set your name first</div><p>Click your name in the header to get started.</p></div>';return;}const mine=sortTickets(playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()));$("#mineTotal").textContent=mine.length+" guide"+(mine.length===1?"":"s");$("#mineScope").textContent="/ by "+myName;renderTicketList(mine,"",$("#mineList"));}
+
+// ===== FOLDER VIEW =====
+const FOLDER_ICONS={"Accounts & Passwords":"🔑","Microsoft 365":"☁️","Outlook":"📧","Teams":"💬","SharePoint":"📂","OneDrive":"💾","Applications / SSO Groups":"🔐","Networking & VPN":"🌐","Software & Apps":"💻","Hardware & Printers":"🖨","Phones & Mobile":"📱","Security":"🛡","Onboarding & Offboarding":"👋","Other":"📌","Uncategorized":"📋"};
+const FOLDER_COLORS={"Accounts & Passwords":"#FFC94D","Microsoft 365":"#3DA9FC","Outlook":"#45B7D1","Teams":"#6C63FF","SharePoint":"#4ECDC4","OneDrive":"#22D3EE","Applications / SSO Groups":"#A855F7","Networking & VPN":"#34D399","Software & Apps":"#FF8E53","Hardware & Printers":"#818CF8","Phones & Mobile":"#F472B6","Security":"#FF6B6B","Onboarding & Offboarding":"#88D498","Other":"#8A97BE","Uncategorized":"#5f6d94"};
+
+function setBrowseMode(mode){
+  browseMode=mode;
+  $$(".vt-btn").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+  $("#listMode").style.display=mode==="list"?"block":"none";
+  $("#folderMode").style.display=mode==="folders"?"block":"none";
+  if(mode==="folders"){openFolderCat=null;renderFolders();}
+}
+function renderFolders(){
+  const q=query.trim();
+  const filtered=playbooks.filter(p=>matches(p,q));
+  // if a folder is open, show its contents
+  if(openFolderCat!==null){
+    renderFolderContents(openFolderCat,q);
+    return;
+  }
+  // group by category
+  const groups={};
+  filtered.forEach(p=>{
+    const cat=p.category||"Uncategorized";
+    if(!groups[cat])groups[cat]=[];
+    groups[cat].push(p);
+  });
+  // sort categories: CATEGORIES order first, then Uncategorized
+  const catOrder=[...CATEGORIES,"Uncategorized"];
+  const sortedCats=Object.keys(groups).sort((a,b)=>{
+    const ai=catOrder.indexOf(a),bi=catOrder.indexOf(b);
+    return(ai===-1?99:ai)-(bi===-1?99:bi);
+  });
+  $("#folderGrid").style.display="grid";
+  $("#folderOpen").style.display="none";
+  if(!sortedCats.length){
+    $("#folderGrid").innerHTML='<div class="empty" style="grid-column:1/-1"><div class="big">No folders</div><p>'+(q?"No guides match that search.":"No guides yet. Create one to get started.")+'</p></div>';
+    return;
+  }
+  $("#folderGrid").innerHTML=sortedCats.map(cat=>{
+    const guides=groups[cat];
+    const sorted=sortTickets(guides);
+    const latest=sorted[0];
+    const icon=FOLDER_ICONS[cat]||"📁";
+    const color=FOLDER_COLORS[cat]||"var(--beacon)";
+    const latestTitle=latest?latest.title:"";
+    const latestPreview=latestTitle.length>50?latestTitle.slice(0,50)+"…":latestTitle;
+    return '<div class="folder-card" data-opencat="'+esc(cat)+'" style="border-top:3px solid '+color+'"><div class="folder-icon">'+icon+'</div><div class="folder-name">'+esc(cat)+'</div><div class="folder-count">'+guides.length+" guide"+(guides.length===1?"":"s")+'</div>'+(latestPreview?'<div class="folder-latest"><b>Latest:</b> '+esc(latestPreview)+'</div>':'')+'</div>';
+  }).join("");
+}
+function renderFolderContents(cat,q){
+  q=q||query.trim();
+  const filtered=playbooks.filter(p=>matches(p,q)).filter(p=>(p.category||"Uncategorized")===cat);
+  const sorted=sortTickets(filtered);
+  const icon=FOLDER_ICONS[cat]||"📁";
+  $("#folderGrid").style.display="none";
+  $("#folderOpen").style.display="block";
+  $("#folderOpenIcon").textContent=icon;
+  $("#folderOpenName").textContent=cat;
+  $("#folderOpenCount").textContent="— "+sorted.length+" guide"+(sorted.length===1?"":"s");
+  if(!sorted.length){
+    $("#folderList").innerHTML='<div class="empty"><div class="big">No guides here</div><p>No guides in '+esc(cat)+(q?" matching that search":"")+'.</p></div>';
+    return;
+  }
+  renderTicketList(sorted,q,$("#folderList"));
+}
 
 // ===== EVENTS =====
 $$(".tab").forEach(t=>t.addEventListener("click",()=>setView(t.dataset.view)));
-$("#search").addEventListener("input",e=>{query=e.target.value;render();});
+$("#search").addEventListener("input",e=>{query=e.target.value;render();if(browseMode==="folders")renderFolders();});
 $("#assistBtn").addEventListener("click",openSA);
 $("#plainBtn").addEventListener("click",doPlain);
 $("#saRun").addEventListener("click",doAssist);
@@ -630,6 +739,15 @@ $("#saRetry").addEventListener("click",doAssist);
 $$(".sa-tone").forEach(t=>t.addEventListener("click",()=>{$$(".sa-tone").forEach(b=>b.classList.remove("active"));t.classList.add("active");saTone=t.dataset.tone;}));
 $("#cancelEdit").addEventListener("click",()=>{stopEdit();resetForm();showMsg("");setView("browse");});
 $("#sortSelect").addEventListener("change",e=>{sortMode=e.target.value;render();});
+// View toggle (list/folders)
+$("#viewToggle").addEventListener("click",e=>{const btn=e.target.closest(".vt-btn");if(btn)setBrowseMode(btn.dataset.mode);});
+// Folder card clicks
+$("#folderGrid").addEventListener("click",e=>{const card=e.target.closest("[data-opencat]");if(card){openFolderCat=card.dataset.opencat;renderFolders();}});
+// Folder back button
+$("#folderBack").addEventListener("click",()=>{openFolderCat=null;renderFolders();});
+// Folder list uses same click handlers as main list
+$("#folderList").addEventListener("click",handleListClick);
+$("#folderList").addEventListener("keydown",handleListKeydown);
 $("#userBtn").addEventListener("click",showWelcome);
 $("#modal-name").addEventListener("input",e=>{const hasName=!!e.target.value.trim();const hasColor=!!selectedColor||!!myColor;$("#modal-save").disabled=!(hasName&&hasColor);});
 $("#modal-save").addEventListener("click",async()=>{const n=$("#modal-name").value.trim();const c=selectedColor||myColor;if(n&&c){saveName(n);const ok=await claimColor(c);if(ok!==false){hideWelcome();toast("Welcome, "+n+"!");render();}}});
