@@ -349,9 +349,19 @@
   </section>
   <section class="view active" id="view-browse">
     <div class="command-bar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A97BE" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="search" placeholder="Search by task, #tag, tool, or keyword…" autocomplete="off"></div>
-    <div class="view-toggle" id="viewToggle">
-      <button class="vt-btn active" data-mode="list">📋 List</button>
-      <button class="vt-btn" data-mode="folders">📁 Folders</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="view-toggle" id="viewToggle" style="margin-bottom:0">
+        <button class="vt-btn active" data-mode="list">📋 List</button>
+        <button class="vt-btn" data-mode="folders">📁 Folders</button>
+      </div>
+      <select class="sort-select" id="sortSelect" style="margin-left:auto">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="alpha">A → Z</option>
+        <option value="category">By category</option>
+        <option value="most-viewed">Most viewed</option>
+        <option value="most-used">Most copied</option>
+      </select>
     </div>
     <div id="listMode">
       <div class="watch-head"><h2>Knowledge Base <span id="scope">/ all guides</span></h2><span class="count" id="count">0 guides</span></div>
@@ -662,7 +672,14 @@ if(!all.length)h+='<div class="cmt-empty">No comments yet.</div>';
 else{h+='<div class="clist">';top.forEach(c=>{const mine=myName&&c.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(mine?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(c.author)+'">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(c.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(c.text)+'</div>';
 const replies=rMap[c.id]||[];if(replies.length){h+='<div class="cmt-replies">';replies.forEach(r=>{const rm=myName&&r.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(rm?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(r.author)+'">'+esc(r.author)+'</span><span class="cmt-when">'+rel(r.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(r.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(r.text)+'</div></div>';});h+='</div>';}h+='</div>';});h+='</div>';}
 h+=ctx+'<div class="crow"><input class="cinput" type="text" data-cid="'+p.id+'" placeholder="'+(rs?"Reply to "+rs.author+"…":"Add a comment…")+'"><button class="mini csend" data-cid="'+p.id+'">Post</button></div></div>';return h;}
-function sortTickets(arr){switch(sortMode){case"alpha":return arr.slice().sort((a,b)=>a.title.localeCompare(b.title));case"most-viewed":return arr.slice().sort((a,b)=>(b.views||0)-(a.views||0));default:return arr.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));}}
+function sortTickets(arr){switch(sortMode){
+  case"oldest":return arr.slice().sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  case"alpha":return arr.slice().sort((a,b)=>a.title.localeCompare(b.title));
+  case"category":return arr.slice().sort((a,b)=>{const ca=(a.category||"zzz").toLowerCase(),cb=(b.category||"zzz").toLowerCase();return ca===cb?(b.updatedAt||0)-(a.updatedAt||0):ca.localeCompare(cb);});
+  case"most-viewed":return arr.slice().sort((a,b)=>(b.views||0)-(a.views||0));
+  case"most-used":return arr.slice().sort((a,b)=>(b.copies||0)-(a.copies||0));
+  case"recently-verified":return arr.slice().sort((a,b)=>(b.verifiedAt||0)-(a.verifiedAt||0));
+  default:return arr.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));}}
 function findRelated(titles){if(!titles?.length)return[];const r=[];titles.forEach(term=>{const t=term.toLowerCase();playbooks.forEach(p=>{if(p.title.toLowerCase().includes(t)||(p.tags||[]).some(tag=>tag.includes(t)))if(!r.find(x=>x.id===p.id))r.push(p);});});return r;}
 function renderTicketList(tickets,q,container){
 if(!tickets.length){container.innerHTML='<div class="empty"><div class="big">No guides yet</div><p>Add your first how-to guide and your team can find it here.</p></div>';return;}
@@ -761,6 +778,7 @@ $$(".sa-tone").forEach(t=>t.addEventListener("click",()=>{$$(".sa-tone").forEach
 $("#cancelEdit").addEventListener("click",()=>{stopEdit();resetForm();showMsg("");setView("browse");});
 // View toggle (list/folders)
 $("#viewToggle").addEventListener("click",e=>{const btn=e.target.closest(".vt-btn");if(btn)setBrowseMode(btn.dataset.mode);});
+$("#sortSelect").addEventListener("change",e=>{sortMode=e.target.value;render();});
 // Folder card clicks
 $("#folderGrid").addEventListener("click",e=>{const card=e.target.closest("[data-opencat]");if(card){openFolderCat=card.dataset.opencat;renderFolders();}});
 // Folder back button
