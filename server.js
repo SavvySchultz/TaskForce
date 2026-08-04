@@ -82,6 +82,17 @@ async function initDB() {
     `);
 
     conn.release();
+
+    // Migrate: add columns that may not exist on older tables
+    const mConn = await pool.getConnection();
+    try {
+      await mConn.query('ALTER TABLE tickets ADD COLUMN helpful INT DEFAULT 0');
+    } catch (e) { /* column already exists */ }
+    try {
+      await mConn.query('ALTER TABLE tickets ADD COLUMN helpfulBy JSON');
+    } catch (e) { /* column already exists */ }
+    mConn.release();
+
     console.log('Database connected and tables ready.');
   } catch (err) {
     console.error('Database init error:', err.message);
