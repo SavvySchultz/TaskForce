@@ -165,7 +165,7 @@
   .dossier{position:relative;background:var(--panel);border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;overflow:hidden;transition:.15s}
   .dossier:hover{border-color:#3a4c78}
   .doss-head{display:flex;gap:14px;cursor:pointer;align-items:flex-start}
-  .num{flex:none;width:40px;height:40px;border-radius:9px;background:var(--gold);color:#241a00;font-family:"Bungee";font-size:15px;display:grid;place-items:center;transform:rotate(-4deg);box-shadow:0 3px 0 #b9902b}
+  .num{flex:none;width:42px;height:42px;border-radius:10px;background:var(--gold);color:#fff;font-family:"Bungee";font-size:14px;display:grid;place-items:center;box-shadow:0 3px 0 rgba(0,0,0,.2);text-shadow:0 1px 2px rgba(0,0,0,.3);letter-spacing:.5px}
   .doss-title{flex:1;min-width:0}
   .doss-title h3{font-family:"Archivo";font-weight:800;font-size:17.5px;margin:2px 0 5px;color:var(--ink)}
   .doss-title h3 mark{background:rgba(255,201,77,.28);color:var(--ink);border-radius:3px;padding:0 2px}
@@ -423,6 +423,13 @@ function celebrateSave(){
   setTimeout(()=>{if(ov.parentNode)ov.remove();},4500);
 }
 function fmtSize(b){if(b<1024)return b+" B";if(b<1048576)return(b/1024).toFixed(1)+" KB";return(b/1048576).toFixed(1)+" MB";}
+function nextGuideNum(){return playbooks.length+1;}
+function getGuideNum(p){
+  // permanent number based on creation order — oldest = 1
+  const sorted=[...playbooks].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  const idx=sorted.findIndex(x=>x.id===p.id);
+  return idx>=0?idx+1:playbooks.length;
+}
 const TEXT_EXT=/\.(txt|md|csv|log)$/i,DOC_EXT=/\.(doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z)$/i,PDF_RE=/\.pdf$/i,IMG_RE=/\.(png|jpe?g|webp|gif|bmp|svg)$/i;
 function fileIcon(n){if(/\.docx?$/i.test(n))return"📄";if(/\.xlsx?$/i.test(n))return"📊";if(/\.pptx?$/i.test(n))return"📽";if(PDF_RE.test(n))return"📕";if(IMG_RE.test(n))return"🖼";return"📎";}
 function fileIconClass(n){if(/\.(docx?|xlsx?|pptx?)$/i.test(n))return"doc";if(PDF_RE.test(n))return"pdf";if(IMG_RE.test(n))return"img";return"doc";}
@@ -580,7 +587,7 @@ async function commit(pb){const name=requireName();if(!name)return;const c=colle
 const savedAttach=pendingAttach.map(a=>({id:a.id,name:a.name,size:a.size,type:a.type,dataUrl:a.dataUrl}));
 const now=Date.now();
 try{if(editingId){const ex=playbooks.find(p=>p.id===editingId)||{};pb.id=editingId;pb.createdAt=ex.createdAt||now;pb.updatedAt=now;pb.views=ex.views||0;pb.copies=ex.copies||0;pb.verifiedAt=ex.verifiedAt||0;pb.verifiedBy=ex.verifiedBy||"";pb.attachments=savedAttach;pb.comments=ex.comments||[];if(c.status==="verified"&&ex.status!=="verified"){pb.verifiedAt=now;pb.verifiedBy=name;}await updateTicketAPI(editingId,pb);stopEdit();}
-else{pb.id=uid();pb.createdAt=now;pb.updatedAt=now;pb.views=0;pb.copies=0;pb.verifiedAt=0;pb.verifiedBy="";pb.attachments=savedAttach;pb.comments=[];if(c.status==="verified"){pb.verifiedAt=now;pb.verifiedBy=name;}openIds.add("__new");await saveTicket(pb);}
+else{pb.id=uid();pb.createdAt=now;pb.updatedAt=now;pb.views=0;pb.copies=0;pb.verifiedAt=0;pb.verifiedBy="";pb.attachments=savedAttach;pb.comments=[];pb.guideNum=nextGuideNum();openIds.add("__new");await saveTicket(pb);}
 await loadTickets();resetForm();setView("browse");celebrateSave();}catch(e){showMsg("Error saving: "+e.message,"err");}
 }
 let saTone="professional",saResult=null;
@@ -682,14 +689,15 @@ function sortTickets(arr){switch(sortMode){
 function findRelated(titles){if(!titles?.length)return[];const r=[];titles.forEach(term=>{const t=term.toLowerCase();playbooks.forEach(p=>{if(p.title.toLowerCase().includes(t)||(p.tags||[]).some(tag=>tag.includes(t)))if(!r.find(x=>x.id===p.id))r.push(p);});});return r;}
 function renderTicketList(tickets,q,container){
 if(!tickets.length){container.innerHTML='<div class="empty"><div class="big">No guides yet</div><p>Add your first how-to guide and your team can find it here.</p></div>';return;}
-container.innerHTML=tickets.map((p,idx)=>{const n=String(idx+1).padStart(2,"0"),tags=(p.tags||[]).map(t=>'<span class="tag">#'+hl(t,q)+"</span>").join(""),catTag=p.category?'<span class="tag" style="color:var(--green);border-color:rgba(126,224,166,.35);background:rgba(126,224,166,.08)">'+esc(p.category)+"</span>":"",attachCt=(p.attachments||[]).length,attachBadge=attachCt?'<span class="attach-count-badge">📎 '+attachCt+"</span>":"",dt=new Date(p.updatedAt).toLocaleDateString(),by=p.author?' · <span class="by">by '+esc(p.author)+"</span>":"",cn=(p.comments||[]).length,cc=cn?'<span class="cc">💬 '+cn+"</span>":"",est=p.estTime?'<span class="est">⏱ '+esc(p.estTime)+"</span>":"",open=openIds.has(p.id)?" open":"";
+container.innerHTML=tickets.map((p,idx)=>{const tags=(p.tags||[]).map(t=>'<span class="tag">#'+hl(t,q)+"</span>").join(""),catTag=p.category?'<span class="tag" style="color:var(--green);border-color:rgba(126,224,166,.35);background:rgba(126,224,166,.08)">'+esc(p.category)+"</span>":"",attachCt=(p.attachments||[]).length,attachBadge=attachCt?'<span class="attach-count-badge">📎 '+attachCt+"</span>":"",dt=new Date(p.updatedAt).toLocaleDateString(),by=p.author?' · <span class="by">by '+esc(p.author)+"</span>":"",cn=(p.comments||[]).length,cc=cn?'<span class="cc">💬 '+cn+"</span>":"",est=p.estTime?'<span class="est">⏱ '+esc(p.estTime)+"</span>":"",open=openIds.has(p.id)?" open":"";
 const hasAttach=(p.attachments||[]).length>0;
 const stepsH=(p.steps||[]).length?'<div class="block"><div class="lab">Steps</div><ul class="steps">'+p.steps.map(s=>"<li>"+fmtStep(s,q)+"</li>").join("")+"</ul></div>":(p.rawNotes?'<div class="block"><div class="lab">Notes</div><div class="raw">'+hl(p.rawNotes,q)+"</div></div>":(hasAttach?'<div class="block"><div class="lab" style="color:var(--beacon)">📎 See attached files below for instructions</div></div>':''));
 const warnH=(p.warnings||[]).length?'<div class="block warn"><div class="lab">Watch-outs</div><ul>'+p.warnings.map(w=>"<li>"+esc(w)+"</li>").join("")+"</ul></div>":"";
 const related=findRelated(p.relatedTitles||[]).filter(r=>r.id!==p.id),relH=related.length?'<div class="block"><div class="lab">Related guides</div><div class="related-list">'+related.map(r=>'<a class="related-link" data-goto="'+r.id+'">'+esc(r.title)+"</a>").join("")+"</div></div>":"";
 const alreadyVoted=myName&&(p.helpfulBy||[]).map(n=>n.toLowerCase()).includes(myName.toLowerCase());
 const helpfulBtn=alreadyVoted?'<button class="mini verify-btn" style="opacity:.5;cursor:default" disabled>👍 You found this helpful'+(p.helpful>1?' (+'+((p.helpful||1)-1)+' others)':'')+'</button>':'<button class="mini verify-btn" data-helpful="'+p.id+'">👍 Helpful'+(p.helpful?' ('+p.helpful+')':'')+'</button>';
-return'<article class="dossier'+open+'" data-id="'+p.id+'"><div class="doss-head" data-toggle="'+p.id+'"><div class="num" style="background:'+getColorForUser(p.author)+'">'+n+'</div><div class="doss-title"><h3>'+hl(p.title,q)+(p.aiCleaned?'<span class="ai-pill">AI</span>':'')+'</h3>'+(p.summary?'<p class="summary">'+hl(p.summary,q)+'</p>':'')+'<div class="tags">'+helpfulBadge(p)+' '+catTag+' '+attachBadge+' '+tags+'</div><div class="meta"><span>'+(p.steps||[]).length+' steps</span>'+est+by+cc+'<span>'+dt+'</span></div></div><div class="caret">▶</div></div><div class="body">'+listBlock("Tools",p.tools)+listBlock("Prerequisites",p.prerequisites)+stepsH+warnH+renderAttachBlock(p)+relH+renderComments(p)+'<div class="doss-tools"><button class="mini" data-copy="'+p.id+'">Copy steps</button>'+helpfulBtn+'<button class="mini" data-edit="'+p.id+'">Edit</button><button class="mini del" data-del="'+p.id+'">Delete</button></div></div></article>';}).join("");}
+const gNum=String(getGuideNum(p)).padStart(2,"0");
+return'<article class="dossier'+open+'" data-id="'+p.id+'"><div class="doss-head" data-toggle="'+p.id+'"><div class="num" style="background:'+getColorForUser(p.author)+'">'+gNum+'</div><div class="doss-title"><h3>'+hl(p.title,q)+(p.aiCleaned?'<span class="ai-pill">AI</span>':'')+'</h3>'+(p.summary?'<p class="summary">'+hl(p.summary,q)+'</p>':'')+'<div class="tags">'+helpfulBadge(p)+' '+catTag+' '+attachBadge+' '+tags+'</div><div class="meta"><span>'+(p.steps||[]).length+' steps</span>'+est+by+cc+'<span>'+dt+'</span></div></div><div class="caret">▶</div></div><div class="body">'+listBlock("Tools",p.tools)+listBlock("Prerequisites",p.prerequisites)+stepsH+warnH+renderAttachBlock(p)+relH+renderComments(p)+'<div class="doss-tools"><button class="mini" data-copy="'+p.id+'">Copy steps</button>'+helpfulBtn+'<button class="mini" data-edit="'+p.id+'">Edit</button><button class="mini del" data-del="'+p.id+'">Delete</button></div></div></article>';}).join("");}
 function setView(v){view=v;["create","browse","mine"].forEach(n=>{$("#view-"+n).classList.toggle("active",v===n);$("#tab-"+n).classList.toggle("active",v===n);});window.scrollTo({top:0,behavior:"smooth"});if(v==="mine")renderMine();}
 function render(){const q=query.trim();let f=playbooks.filter(p=>matches(p,q));const shown=sortTickets(f);
 $("#count").textContent=playbooks.length+(playbooks.length===1?" guide":" guides");$("#tabCount").textContent=playbooks.length;
