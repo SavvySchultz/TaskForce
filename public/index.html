@@ -56,8 +56,8 @@
   .create-wrap{max-width:1100px;margin:0 auto;display:flex;gap:18px;align-items:flex-start}
   .create-main{flex:1;min-width:0;max-width:660px}
   .create-wrap:not(.assist-open) .create-main{margin:0 auto}
-  .sa-panel{width:380px;flex:none;background:var(--panel);border:1.5px solid rgba(255,201,77,.3);border-radius:var(--radius);padding:20px;position:sticky;top:20px;display:none;max-height:calc(100vh - 40px);overflow-y:auto;position:relative}
-  .create-wrap.assist-open .sa-panel{display:block}
+  .sa-panel{width:380px;flex:none;background:var(--panel);border:1.5px solid rgba(255,201,77,.3);border-radius:var(--radius);padding:20px;position:relative;display:none;max-height:calc(100vh - 40px);overflow-y:auto;overflow-x:hidden}
+  .create-wrap.assist-open .sa-panel{display:block;position:sticky;top:20px}
   .sa-panel h3{font-family:"Archivo";font-weight:900;font-size:16px;margin:0 0 4px;color:var(--gold);display:flex;align-items:center;gap:8px}
   .sa-sub{font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5}
   .sa-tone-label{font-family:"Archivo";font-weight:700;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
@@ -679,13 +679,13 @@ else{h+='<div class="clist">';top.forEach(c=>{const mine=myName&&c.author.toLowe
 const replies=rMap[c.id]||[];if(replies.length){h+='<div class="cmt-replies">';replies.forEach(r=>{const rm=myName&&r.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(rm?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(r.author)+'">'+esc(r.author)+'</span><span class="cmt-when">'+rel(r.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(r.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(r.text)+'</div></div>';});h+='</div>';}h+='</div>';});h+='</div>';}
 h+=ctx+'<div class="crow"><input class="cinput" type="text" data-cid="'+p.id+'" placeholder="'+(rs?"Reply to "+rs.author+"…":"Add a comment…")+'"><button class="mini csend" data-cid="'+p.id+'">Post</button></div></div>';return h;}
 function sortTickets(arr){switch(sortMode){
+  case"newest":return arr.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   case"oldest":return arr.slice().sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
   case"alpha":return arr.slice().sort((a,b)=>a.title.localeCompare(b.title));
   case"most-helpful":return arr.slice().sort((a,b)=>(b.helpful||0)-(a.helpful||0));
   case"most-viewed":return arr.slice().sort((a,b)=>(b.views||0)-(a.views||0));
   case"most-used":return arr.slice().sort((a,b)=>(b.copies||0)-(a.copies||0));
-  case"recently-verified":return arr.slice().sort((a,b)=>(b.verifiedAt||0)-(a.verifiedAt||0));
-  default:return arr.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));}}
+  default:return arr.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));}}
 function findRelated(titles){if(!titles?.length)return[];const r=[];titles.forEach(term=>{const t=term.toLowerCase();playbooks.forEach(p=>{if(p.title.toLowerCase().includes(t)||(p.tags||[]).some(tag=>tag.includes(t)))if(!r.find(x=>x.id===p.id))r.push(p);});});return r;}
 function renderTicketList(tickets,q,container){
 if(!tickets.length){container.innerHTML='<div class="empty"><div class="big">No guides yet</div><p>Add your first how-to guide and your team can find it here.</p></div>';return;}
@@ -831,11 +831,6 @@ $("#list").addEventListener("click",handleListClick);
 $("#list").addEventListener("keydown",handleListKeydown);
 $("#mineList").addEventListener("click",handleListClick);
 $("#mineList").addEventListener("keydown",handleListKeydown);
-
-load();
-</script>
-</body>
-</html>
 
 load();
 </script>
