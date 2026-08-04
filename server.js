@@ -52,6 +52,8 @@ async function initDB() {
         aiCleaned BOOLEAN DEFAULT FALSE,
         views INT DEFAULT 0,
         copies INT DEFAULT 0,
+        helpful INT DEFAULT 0,
+        helpfulBy JSON,
         verifiedAt BIGINT DEFAULT 0,
         verifiedBy VARCHAR(200),
         createdAt BIGINT NOT NULL,
@@ -172,6 +174,8 @@ app.get('/api/tickets', async (req, res) => {
       aiCleaned: !!t.aiCleaned,
       views: t.views || 0,
       copies: t.copies || 0,
+      helpful: t.helpful || 0,
+      helpfulBy: safeJSON(t.helpfulBy, []),
       verifiedAt: t.verifiedAt || 0,
       verifiedBy: t.verifiedBy || '',
       createdAt: t.createdAt,
@@ -233,7 +237,7 @@ app.patch('/api/tickets/:id', async (req, res) => {
     const sets = [];
     const vals = [];
     for (const [k, v] of Object.entries(fields)) {
-      if (['views', 'copies', 'status', 'verifiedAt', 'verifiedBy', 'updatedAt'].includes(k)) {
+      if (['views', 'copies', 'status', 'helpful', 'verifiedAt', 'verifiedBy', 'updatedAt'].includes(k)) {
         sets.push(`${k}=?`);
         vals.push(v);
       }
@@ -255,6 +259,27 @@ app.delete('/api/tickets/:id', async (req, res) => {
     await pool.query('DELETE FROM comments WHERE ticketId=?', [req.params.id]);
     await pool.query('DELETE FROM tickets WHERE id=?', [req.params.id]);
     res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST helpful vote (one per user)
+app.post('/api/tickets/:id/helpful', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name required' });
+    const [rows] = await pool.query('SELECT helpful, helpfulBy FROM tickets WHERE id=?', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    const existing = safeJSON(rows[0].helpfulBy, []);
+    if (existing.map(n => n.toLowerCase()).includes(name.toLowerCase())) {
+      return res.status(409).json({ error: 'Already voted' });
+    }
+    existing.push(name);
+    await pool.query('UPDATE tickets SET helpful=?, helpfulBy=?, updatedAt=? WHERE id=?',
+      [existing.length, JSON.stringify(existing), Date.now(), req.params.id]);
+    res.json({ success: true, helpful: existing.length });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
