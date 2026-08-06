@@ -391,8 +391,27 @@
     </div>
   </section>
   <section class="view" id="view-mine">
-    <div class="watch-head"><h2>My Guides <span id="mineScope"></span></h2><span class="count" id="mineTotal"></span></div>
-    <div id="mineList"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="view-toggle" id="mineViewToggle">
+        <button class="vt-btn active" data-minemode="list">📋 List</button>
+        <button class="vt-btn" data-minemode="folders">📁 Folders</button>
+      </div>
+    </div>
+    <div id="mineListMode">
+      <div class="watch-head"><h2>My Guides <span id="mineScope"></span></h2><span class="count" id="mineTotal"></span></div>
+      <div id="mineList"></div>
+    </div>
+    <div id="mineFolderMode" style="display:none">
+      <div class="watch-head"><h2>My Guides <span id="mineFolderScope"></span></h2></div>
+      <div id="mineFolderGrid" class="folder-grid"></div>
+      <div id="mineFolderOpen" style="display:none">
+        <div class="folder-header">
+          <button class="folder-back" id="mineFolderBack">← My Folders</button>
+          <h2><span id="mineFolderOpenIcon"></span> <span id="mineFolderOpenName"></span> <span class="f-count" id="mineFolderOpenCount"></span></h2>
+        </div>
+        <div id="mineFolderList"></div>
+      </div>
+    </div>
   </section>
 </div>
 <div class="toast" id="toast"></div>
@@ -755,7 +774,52 @@ if(openIds.has("__new")&&shown[0]){openIds.delete("__new");openIds.add(shown[0].
 renderTicketList(shown,q,$("#list"));
 if(browseMode==="folders")renderFolders();
 if(view==="mine")renderMine();}
-function renderMine(){if(!myName){$("#mineList").innerHTML='<div class="empty"><div class="big">Set your name first</div><p>Click your name in the header to get started.</p></div>';return;}const mine=sortTickets(playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()));$("#mineTotal").textContent=mine.length+" guide"+(mine.length===1?"":"s");$("#mineScope").textContent="/ by "+myName;renderTicketList(mine,"",$("#mineList"));}
+let mineBrowseMode="list",mineOpenFolderCat=null;
+function setMineBrowseMode(mode){
+  mineBrowseMode=mode;
+  $$("#mineViewToggle .vt-btn").forEach(b=>b.classList.toggle("active",b.dataset.minemode===mode));
+  $("#mineListMode").style.display=mode==="list"?"block":"none";
+  $("#mineFolderMode").style.display=mode==="folders"?"block":"none";
+  if(mode==="folders"){mineOpenFolderCat=null;renderMineFolders();}
+}
+function renderMine(){
+  if(!myName){$("#mineList").innerHTML='<div class="empty"><div class="big">Set your name first</div><p>Click your name in the header to get started.</p></div>';$("#mineListMode").style.display="block";$("#mineFolderMode").style.display="none";return;}
+  const mine=sortTickets(playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()));
+  $("#mineTotal").textContent=mine.length+" guide"+(mine.length===1?"":"s");
+  $("#mineScope").textContent="/ by "+myName;
+  renderTicketList(mine,"",$("#mineList"));
+  if(mineBrowseMode==="folders")renderMineFolders();
+}
+function renderMineFolders(){
+  if(!myName)return;
+  const mine=playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase());
+  $("#mineFolderScope").textContent="/ by "+myName;
+  if(mineOpenFolderCat!==null){renderMineFolderContents(mineOpenFolderCat);return;}
+  const groups={};
+  mine.forEach(p=>{const cat=p.category||"Uncategorized";if(!groups[cat])groups[cat]=[];groups[cat].push(p);});
+  const catOrder=[...CATEGORIES,"Uncategorized"];
+  const sortedCats=Object.keys(groups).sort((a,b)=>{const ai=catOrder.indexOf(a),bi=catOrder.indexOf(b);return(ai===-1?99:ai)-(bi===-1?99:bi);});
+  $("#mineFolderGrid").style.display="grid";
+  $("#mineFolderOpen").style.display="none";
+  if(!sortedCats.length){$("#mineFolderGrid").innerHTML='<div class="empty" style="grid-column:1/-1"><div class="big">No guides yet</div><p>Create your first guide and it will show up here.</p></div>';return;}
+  $("#mineFolderGrid").innerHTML=sortedCats.map(cat=>{
+    const guides=groups[cat];const sorted=sortTickets(guides);const latest=sorted[0];
+    const icon=FOLDER_ICONS[cat]||"📁";const color=FOLDER_COLORS[cat]||"var(--beacon)";
+    const preview=latest?latest.title:"";const trimmed=preview.length>50?preview.slice(0,50)+"…":preview;
+    return'<div class="folder-card" data-mineopencat="'+esc(cat)+'" style="border-top:3px solid '+color+'"><div class="folder-icon">'+icon+'</div><div class="folder-name">'+esc(cat)+'</div><div class="folder-count">'+guides.length+(guides.length===1?" guide":" guides")+'</div>'+(trimmed?'<div class="folder-latest"><b>Latest:</b> '+esc(trimmed)+'</div>':'')+'</div>';
+  }).join("");
+}
+function renderMineFolderContents(cat){
+  const mine=playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()).filter(p=>(p.category||"Uncategorized")===cat);
+  const sorted=sortTickets(mine);const icon=FOLDER_ICONS[cat]||"📁";
+  $("#mineFolderGrid").style.display="none";
+  $("#mineFolderOpen").style.display="block";
+  $("#mineFolderOpenIcon").textContent=icon;
+  $("#mineFolderOpenName").textContent=cat;
+  $("#mineFolderOpenCount").textContent="— "+sorted.length+" guide"+(sorted.length===1?"":"s");
+  if(!sorted.length){$("#mineFolderList").innerHTML='<div class="empty"><div class="big">No guides here</div></div>';return;}
+  renderTicketList(sorted,"",$("#mineFolderList"));
+}
 
 // ===== FOLDER VIEW =====
 const FOLDER_ICONS={"Accounts & Passwords":"🔑","Microsoft 365":"☁️","Outlook":"📧","Teams":"💬","SharePoint":"📂","OneDrive":"💾","Mimecast":"📩","SSO Groups":"🔐","Software & Apps":"💻","Networking & VPN":"🌐","Hardware & Printers":"🖨","Phones & Mobile":"📱","Security":"🛡","Onboarding & Offboarding":"👋","Other":"📌","Uncategorized":"📋"};
@@ -892,6 +956,12 @@ $("#list").addEventListener("click",handleListClick);
 $("#list").addEventListener("keydown",handleListKeydown);
 $("#mineList").addEventListener("click",handleListClick);
 $("#mineList").addEventListener("keydown",handleListKeydown);
+// My Guides folder toggle
+$("#mineViewToggle").addEventListener("click",e=>{const btn=e.target.closest("[data-minemode]");if(btn)setMineBrowseMode(btn.dataset.minemode);});
+$("#mineFolderGrid").addEventListener("click",e=>{const card=e.target.closest("[data-mineopencat]");if(card){mineOpenFolderCat=card.dataset.mineopencat;renderMineFolders();}});
+$("#mineFolderBack").addEventListener("click",()=>{mineOpenFolderCat=null;renderMineFolders();});
+$("#mineFolderList").addEventListener("click",handleListClick);
+$("#mineFolderList").addEventListener("keydown",handleListKeydown);
 
 load();
 </script>
