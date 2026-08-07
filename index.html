@@ -430,8 +430,7 @@
     </div>
     <div style="padding:32px 28px;flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;min-height:200px">
       <div style="text-align:center;width:100%">
-        <div style="font-family:Bungee;font-size:48px;color:var(--signal);margin-bottom:16px" id="followStepNum"></div>
-        <div style="font-size:18px;line-height:1.7;color:var(--ink);max-width:500px;margin:0 auto" id="followStepText"></div>
+        <div style="font-size:20px;line-height:1.7;color:var(--ink);max-width:520px;margin:0 auto;text-align:left" id="followStepText"></div>
       </div>
     </div>
     <div style="padding:16px 22px;border-top:1.5px solid var(--line);display:flex;gap:10px;align-items:center;justify-content:center">
@@ -777,10 +776,9 @@ function openFollow(id){
 function renderFollowStep(){
   $("#followTitle").textContent=followGuideTitle;
   $("#followProgress").textContent="Step "+(followIdx+1)+" of "+followSteps.length;
-  $("#followStepNum").textContent=followIdx+1;
   const raw=followSteps[followIdx]||"";
-  // Render with formatting
-  let html=esc(raw).replace(/\n/g,"<br>").replace(/`([^`]+)`/g,'<code style="font-family:Space Mono;font-size:15px;background:var(--bg-deep);border:1px solid var(--line);border-radius:5px;padding:2px 8px;color:var(--beacon)">$1</code>');
+  let html='<div style="font-family:Space Mono;font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px">step '+(followIdx+1)+'</div>';
+  html+=esc(raw).replace(/\n/g,"<br>").replace(/`([^`]+)`/g,'<code style="font-family:Space Mono;font-size:15px;background:var(--bg-deep);border:1px solid var(--line);border-radius:5px;padding:2px 8px;color:var(--beacon)">$1</code>');
   $("#followStepText").innerHTML=html;
   $("#followPrev").disabled=followIdx===0;
   $("#followPrev").style.opacity=followIdx===0?".3":"1";
