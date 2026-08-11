@@ -597,7 +597,12 @@ async function load(){
   apiKey=lsGet('tf:apikey')||'';reflectKeyState();
   await checkDB();await loadTeamUsers();await loadTickets();
   if(!myName)setTimeout(showWelcome,600);
-  if(useDB)setInterval(async()=>{await loadTeamUsers();await loadTickets();},15000);
+  if(useDB)setInterval(async()=>{
+    // Don't refresh if user is typing in a comment box
+    const active=document.activeElement;
+    if(active&&active.classList.contains("cinput"))return;
+    await loadTeamUsers();await loadTickets();
+  },15000);
 }
 function saveName(n){myName=n;lsSet('tf:name',n);updateUserUI();}
 function reflectKeyState(){const el=$("#keyState");if(apiKey){el.innerHTML='Key saved ✓ · <a id="rmKey">remove</a>';$("#saKeybox").style.display="none";document.getElementById("rmKey")?.addEventListener("click",()=>{apiKey="";localStorage.removeItem('tf:apikey');reflectKeyState();});}else{el.textContent="No key set.";try{$("#saKeybox").style.display="block";}catch(e){}}}
@@ -731,11 +736,16 @@ function hl(t,q){const s=esc(t);if(!q)return s;const terms=q.split(/\s+/).filter
 function listBlock(lab,items){if(!items?.length)return"";return'<div class="block"><div class="lab">'+lab+'</div><ul class="inline-list">'+items.map(i=>"<li>"+esc(i)+"</li>").join("")+"</ul></div>";}
 function helpfulBadge(p){const n=p.helpful||0;if(!n)return'';return'<span class="status-badge s-verified">👍 '+n+' found this helpful</span>';}
 function renderAttachBlock(p){const att=p.attachments||[];if(!att.length)return"";return'<div class="block"><div class="lab">Attached files ('+att.length+')</div><div class="attach-block">'+att.map(a=>'<div class="attach-card"><div class="a-icon '+fileIconClass(a.name)+'">'+fileIcon(a.name)+'</div><div class="a-info"><div class="a-name">'+esc(a.name)+'</div><div class="a-size">'+fmtSize(a.size||0)+'</div></div><button class="a-dl" data-dlticket="'+p.id+'" data-dlattach="'+a.id+'">⬇ Download</button></div>').join("")+"</div></div>";}
+function cmtActions(c,p,isMine){
+  let btns='<button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(c.author)+'" data-replyticket="'+p.id+'">Reply</button>';
+  if(isMine)btns+='<button class="cmt-reply-btn" data-cmtedit="'+c.id+'" data-cmtticket="'+p.id+'">Edit</button><button class="cmt-reply-btn" data-cmtdel="'+c.id+'" data-cmtticket="'+p.id+'" style="color:var(--signal)">Delete</button>';
+  return btns;
+}
 function renderComments(p){const all=(p.comments||[]).slice().sort((a,b)=>a.at-b.at),top=all.filter(c=>!c.replyTo),rMap={};all.filter(c=>c.replyTo).forEach(c=>{if(!rMap[c.replyTo])rMap[c.replyTo]=[];rMap[c.replyTo].push(c);});const rs=replyState[p.id],ctx=rs?'<div class="crow-context">↳ Replying to '+esc(rs.author)+' <button class="cancel-reply" data-cancelreply="'+p.id+'">✕</button></div>':"";
 let h='<div class="block comments"><div class="lab">Comments ('+all.length+')</div>';
 if(!all.length)h+='<div class="cmt-empty">No comments yet.</div>';
-else{h+='<div class="clist">';top.forEach(c=>{const mine=myName&&c.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(mine?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(c.author)+'">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(c.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(c.text)+'</div>';
-const replies=rMap[c.id]||[];if(replies.length){h+='<div class="cmt-replies">';replies.forEach(r=>{const rm=myName&&r.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(rm?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(r.author)+'">'+esc(r.author)+'</span><span class="cmt-when">'+rel(r.at)+'</span><button class="cmt-reply-btn" data-replyto="'+c.id+'" data-replyauthor="'+esc(r.author)+'" data-replyticket="'+p.id+'">Reply</button></div><div class="cmt-txt">'+esc(r.text)+'</div></div>';});h+='</div>';}h+='</div>';});h+='</div>';}
+else{h+='<div class="clist">';top.forEach(c=>{const mine=myName&&c.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(mine?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(c.author)+'">'+esc(c.author)+'</span><span class="cmt-when">'+rel(c.at)+'</span>'+cmtActions(c,p,mine)+'</div><div class="cmt-txt" id="cmt-txt-'+c.id+'">'+esc(c.text)+'</div>';
+const replies=rMap[c.id]||[];if(replies.length){h+='<div class="cmt-replies">';replies.forEach(r=>{const rm=myName&&r.author.toLowerCase()===myName.toLowerCase();h+='<div class="cmt'+(rm?" mine":"")+'"><div class="cmt-head"><span class="cmt-who" style="color:'+getColorForUser(r.author)+'">'+esc(r.author)+'</span><span class="cmt-when">'+rel(r.at)+'</span>'+cmtActions(r,p,rm)+'</div><div class="cmt-txt" id="cmt-txt-'+r.id+'">'+esc(r.text)+'</div></div>';});h+='</div>';}h+='</div>';});h+='</div>';}
 h+=ctx+'<div class="crow"><input class="cinput" type="text" data-cid="'+p.id+'" placeholder="'+(rs?"Reply to "+rs.author+"…":"Add a comment…")+'"><button class="mini csend" data-cid="'+p.id+'">Post</button></div></div>';return h;}
 function sortTickets(arr){switch(sortMode){
   case"newest":return arr.slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -1007,6 +1017,30 @@ $("#relatedChips").addEventListener("click",e=>{
 
 function handleListClick(e){
 const send=e.target.closest("[data-cid].csend");if(send){const inp=e.target.closest(".comments").querySelector(".cinput"),tid=send.dataset.cid,rs=replyState[tid];const name=requireName();if(!name)return;postComment(tid,{id:uid(),author:name,text:inp.value.trim(),replyTo:rs?.replyTo||null,at:Date.now()});inp.value="";delete replyState[tid];return;}
+const cmtDel=e.target.closest("[data-cmtdel]");if(cmtDel){e.stopPropagation();const cid=cmtDel.dataset.cmtdel,tid=cmtDel.dataset.cmtticket;
+// Replace the delete button with confirm/cancel inline
+const origText=cmtDel.textContent;
+cmtDel.textContent="Sure?";cmtDel.style.color="#fff";cmtDel.style.background="var(--signal)";cmtDel.style.borderRadius="5px";cmtDel.style.padding="2px 8px";
+cmtDel.dataset.confirming="1";
+const cancel=document.createElement("button");cancel.className="cmt-reply-btn";cancel.textContent="No";cancel.style.marginLeft="4px";
+cmtDel.after(cancel);
+cancel.onclick=(ev)=>{ev.stopPropagation();cmtDel.textContent=origText;cmtDel.style.color="var(--signal)";cmtDel.style.background="none";cmtDel.style.borderRadius="";cmtDel.style.padding="2px 6px";delete cmtDel.dataset.confirming;cancel.remove();};
+cmtDel.onclick=(ev)=>{ev.stopPropagation();
+if(useDB){fetch(API+'/tickets/'+tid+'/comments/'+cid,{method:'DELETE'}).then(r=>{if(!r.ok)throw new Error("Server error");return loadTickets();}).catch(er=>toast("Couldn't delete: "+er.message,"err"));}
+else{const p=playbooks.find(x=>x.id===tid);if(p){p.comments=(p.comments||[]).filter(c=>c.id!==cid);lsSet('taskforce:local',JSON.stringify(playbooks));render();}}};
+return;}
+const cmtEdit=e.target.closest("[data-cmtedit]");if(cmtEdit){const cid=cmtEdit.dataset.cmtedit,tid=cmtEdit.dataset.cmtticket;
+const txtEl=document.getElementById("cmt-txt-"+cid);if(!txtEl)return;
+if(document.getElementById("cmtedit-"+cid))return;
+const oldText=txtEl.textContent;
+txtEl.innerHTML='<div style="display:flex;gap:6px;align-items:center"><input type="text" class="cinput" value="'+esc(oldText)+'" style="flex:1;font-size:13px;padding:6px 8px" id="cmtedit-'+cid+'"><button class="mini" id="cmtsave-'+cid+'" style="padding:5px 10px">Save</button><button class="mini" id="cmtcancel-'+cid+'" style="padding:5px 10px">Cancel</button></div>';
+const inp2=document.getElementById("cmtedit-"+cid);inp2.focus();inp2.setSelectionRange(inp2.value.length,inp2.value.length);
+document.getElementById("cmtsave-"+cid).onclick=()=>{const newText=inp2.value.trim();if(!newText)return;
+if(useDB){fetch(API+'/tickets/'+tid+'/comments/'+cid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:newText})}).then(()=>loadTickets());}
+else{const p=playbooks.find(x=>x.id===tid);if(p){const cm=(p.comments||[]).find(c=>c.id===cid);if(cm)cm.text=newText;lsSet('taskforce:local',JSON.stringify(playbooks));render();}}};
+document.getElementById("cmtcancel-"+cid).onclick=()=>{txtEl.textContent=oldText;};
+inp2.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();document.getElementById("cmtsave-"+cid).click();}if(ev.key==="Escape")document.getElementById("cmtcancel-"+cid).click();});
+return;}
 const rb=e.target.closest("[data-replyto]");if(rb){replyState[rb.dataset.replyticket]={replyTo:rb.dataset.replyto,author:rb.dataset.replyauthor};render();setTimeout(()=>{const inp=document.querySelector('.dossier[data-id="'+rb.dataset.replyticket+'"] .cinput');inp?.focus();},50);return;}
 const cr=e.target.closest("[data-cancelreply]");if(cr){delete replyState[cr.dataset.cancelreply];render();return;}
 const dl=e.target.closest("[data-dlattach]");if(dl){downloadAttach(dl.dataset.dlticket,dl.dataset.dlattach);return;}
