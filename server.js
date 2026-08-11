@@ -91,6 +91,9 @@ async function initDB() {
     try {
       await mConn.query('ALTER TABLE tickets ADD COLUMN helpfulBy JSON');
     } catch (e) { /* column already exists */ }
+    try {
+      await mConn.query('ALTER TABLE tickets ADD COLUMN guideNum INT DEFAULT 0');
+    } catch (e) { /* column already exists */ }
     mConn.release();
 
     console.log('Database connected and tables ready.');
@@ -187,6 +190,7 @@ app.get('/api/tickets', async (req, res) => {
       copies: t.copies || 0,
       helpful: t.helpful || 0,
       helpfulBy: safeJSON(t.helpfulBy, []),
+      guideNum: t.guideNum || 0,
       verifiedAt: t.verifiedAt || 0,
       verifiedBy: t.verifiedBy || '',
       createdAt: t.createdAt,
@@ -207,13 +211,13 @@ app.post('/api/tickets', async (req, res) => {
     const t = req.body;
     const id = t.id || genId();
     await pool.query(
-      `INSERT INTO tickets (id, title, summary, author, category, status, estTime, tags, tools, prerequisites, steps, warnings, relatedTitles, attachments, rawNotes, aiCleaned, views, copies, verifiedAt, verifiedBy, createdAt, updatedAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO tickets (id, title, summary, author, category, status, estTime, tags, tools, prerequisites, steps, warnings, relatedTitles, attachments, rawNotes, aiCleaned, views, copies, guideNum, verifiedAt, verifiedBy, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, t.title, t.summary || '', t.author || '', t.category || '', t.status || 'draft', t.estTime || '',
        JSON.stringify(t.tags || []), JSON.stringify(t.tools || []), JSON.stringify(t.prerequisites || []),
        JSON.stringify(t.steps || []), JSON.stringify(t.warnings || []), JSON.stringify(t.relatedTitles || []),
        JSON.stringify(t.attachments || []), t.rawNotes || '', t.aiCleaned ? 1 : 0,
-       0, 0, t.verifiedAt || 0, t.verifiedBy || '', t.createdAt || Date.now(), t.updatedAt || Date.now()]
+       0, 0, t.guideNum || 0, t.verifiedAt || 0, t.verifiedBy || '', t.createdAt || Date.now(), t.updatedAt || Date.now()]
     );
     res.json({ id, success: true });
   } catch (e) {
@@ -227,12 +231,12 @@ app.put('/api/tickets/:id', async (req, res) => {
   try {
     const t = req.body;
     await pool.query(
-      `UPDATE tickets SET title=?, summary=?, author=?, category=?, status=?, estTime=?, tags=?, tools=?, prerequisites=?, steps=?, warnings=?, relatedTitles=?, attachments=?, rawNotes=?, aiCleaned=?, views=?, copies=?, verifiedAt=?, verifiedBy=?, updatedAt=? WHERE id=?`,
+      `UPDATE tickets SET title=?, summary=?, author=?, category=?, status=?, estTime=?, tags=?, tools=?, prerequisites=?, steps=?, warnings=?, relatedTitles=?, attachments=?, rawNotes=?, aiCleaned=?, views=?, copies=?, guideNum=?, verifiedAt=?, verifiedBy=?, updatedAt=? WHERE id=?`,
       [t.title, t.summary || '', t.author || '', t.category || '', t.status || 'draft', t.estTime || '',
        JSON.stringify(t.tags || []), JSON.stringify(t.tools || []), JSON.stringify(t.prerequisites || []),
        JSON.stringify(t.steps || []), JSON.stringify(t.warnings || []), JSON.stringify(t.relatedTitles || []),
        JSON.stringify(t.attachments || []), t.rawNotes || '', t.aiCleaned ? 1 : 0,
-       t.views || 0, t.copies || 0, t.verifiedAt || 0, t.verifiedBy || '', t.updatedAt || Date.now(), req.params.id]
+       t.views || 0, t.copies || 0, t.guideNum || 0, t.verifiedAt || 0, t.verifiedBy || '', t.updatedAt || Date.now(), req.params.id]
     );
     res.json({ success: true });
   } catch (e) {
@@ -248,7 +252,7 @@ app.patch('/api/tickets/:id', async (req, res) => {
     const sets = [];
     const vals = [];
     for (const [k, v] of Object.entries(fields)) {
-      if (['views', 'copies', 'status', 'helpful', 'verifiedAt', 'verifiedBy', 'updatedAt'].includes(k)) {
+      if (['views', 'copies', 'status', 'helpful', 'guideNum', 'verifiedAt', 'verifiedBy', 'updatedAt'].includes(k)) {
         sets.push(`${k}=?`);
         vals.push(v);
       }
@@ -308,6 +312,31 @@ app.post('/api/tickets/:id/comments', async (req, res) => {
     );
     await pool.query('UPDATE tickets SET updatedAt=? WHERE id=?', [Date.now(), req.params.id]);
     res.json({ id, success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE a comment
+app.delete('/api/tickets/:id/comments/:cid', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    await pool.query('DELETE FROM comments WHERE id=? AND ticketId=?', [req.params.cid, req.params.id]);
+    await pool.query('UPDATE tickets SET updatedAt=? WHERE id=?', [Date.now(), req.params.id]);
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT update a comment
+app.put('/api/tickets/:id/comments/:cid', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'Text required' });
+    await pool.query('UPDATE comments SET text=? WHERE id=? AND ticketId=?', [text.trim(), req.params.cid, req.params.id]);
+    res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
