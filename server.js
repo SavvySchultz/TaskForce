@@ -81,6 +81,18 @@ async function initDB() {
       ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
     `);
 
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS quickrefs (
+        id VARCHAR(20) PRIMARY KEY,
+        title VARCHAR(500) NOT NULL,
+        body TEXT NOT NULL,
+        category VARCHAR(100),
+        author VARCHAR(200),
+        createdAt BIGINT NOT NULL,
+        updatedAt BIGINT NOT NULL
+      ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+    `);
+
     conn.release();
 
     // Migrate: add columns that may not exist on older tables
@@ -340,6 +352,44 @@ app.put('/api/tickets/:id/comments/:cid', async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ===== QUICK REFERENCE =====
+app.get('/api/quickrefs', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    const [rows] = await pool.query('SELECT * FROM quickrefs ORDER BY updatedAt DESC');
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/quickrefs', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    const q = req.body;
+    const id = q.id || genId();
+    await pool.query('INSERT INTO quickrefs (id, title, body, category, author, createdAt, updatedAt) VALUES (?,?,?,?,?,?,?)',
+      [id, q.title, q.body || '', q.category || '', q.author || '', q.createdAt || Date.now(), q.updatedAt || Date.now()]);
+    res.json({ id, success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/quickrefs/:id', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    const q = req.body;
+    await pool.query('UPDATE quickrefs SET title=?, body=?, category=?, updatedAt=? WHERE id=?',
+      [q.title, q.body || '', q.category || '', Date.now(), req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/quickrefs/:id', async (req, res) => {
+  if (!dbReady()) return res.status(503).json({ error: 'Database not available' });
+  try {
+    await pool.query('DELETE FROM quickrefs WHERE id=?', [req.params.id]);
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // Catch-all: serve frontend
