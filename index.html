@@ -94,8 +94,8 @@
   @media(max-width:820px){.create-wrap{flex-direction:column-reverse}.sa-panel{width:100%;position:static;max-height:none}}
   .command-bar{position:relative;margin:0 0 14px}
   .command-bar svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);opacity:.55}
-  #search{width:100%;background:var(--panel);border:1.5px solid var(--line);color:var(--ink);font-family:"Inter";font-size:16px;padding:16px 18px 16px 50px;border-radius:12px;outline:none;transition:.18s}
-  #search::placeholder{color:var(--muted)}#search:focus{border-color:var(--beacon);box-shadow:0 0 0 4px rgba(61,169,252,.16)}
+  #search,#qrSearch{width:100%;background:var(--panel);border:1.5px solid var(--line);color:var(--ink);font-family:"Inter";font-size:16px;padding:16px 18px 16px 50px;border-radius:12px;outline:none;transition:.18s}
+  #search::placeholder,#qrSearch::placeholder{color:var(--muted)}#search:focus,#qrSearch:focus{border-color:var(--beacon);box-shadow:0 0 0 4px rgba(61,169,252,.16)}
   .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
   .filter-label{font-family:"Archivo";font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-right:4px}
   .filter-chip{font-family:"Space Mono";font-size:11px;color:var(--muted);background:var(--panel);border:1.5px solid var(--line);border-radius:20px;padding:5px 12px;cursor:pointer;transition:.15s;white-space:nowrap}
@@ -240,6 +240,15 @@
   .toast.show{display:block}.toast.err{border-color:var(--signal);color:#ffcabd}
   .footnote{color:#54608a;font-size:12px;margin-top:26px;text-align:center;font-family:"Space Mono"}
 
+  /* Quick Ref cards */
+  .qr-card{background:var(--panel);border:1.5px solid var(--line);border-left:4px solid var(--gold);border-radius:0 var(--radius) var(--radius) 0;padding:16px 18px;margin-bottom:10px;transition:.15s}
+  .qr-card:hover{border-color:var(--gold);border-left-color:var(--gold)}
+  .qr-card-title{font-family:"Archivo";font-weight:800;font-size:15px;color:var(--ink);margin:0 0 6px}
+  .qr-card-body{font-size:14px;color:var(--muted);line-height:1.6;white-space:pre-wrap;margin:0 0 8px}
+  .qr-card-meta{font-family:"Space Mono";font-size:10.5px;color:#5f6d94;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .qr-card-cat{color:var(--green)}
+  .qr-card-tools{display:flex;gap:6px;margin-top:10px}
+
   /* View toggle */
   .view-toggle{display:flex;gap:2px;background:var(--panel-2);border:1.5px solid var(--line);border-radius:10px;padding:3px;margin-bottom:14px;width:fit-content}
   .vt-btn{font-family:"Archivo";font-weight:700;font-size:12.5px;color:var(--muted);background:none;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px}
@@ -295,6 +304,7 @@
     <button class="tab" id="tab-create" data-view="create">📝 New Guide</button>
     <button class="tab active" id="tab-browse" data-view="browse">📖 Browse All <span class="tab-count" id="tabCount">0</span></button>
     <button class="tab" id="tab-favs" data-view="favs">⭐ Favorites <span class="tab-count" id="favsCount">0</span></button>
+    <button class="tab" id="tab-qr" data-view="qr">📌 Quick Ref <span class="tab-count" id="qrCount">0</span></button>
     <button class="tab mine" id="tab-mine" data-view="mine">👤 My Guides <span class="tab-count" id="mineCount">0</span></button>
   </nav>
   <section class="view" id="view-create">
@@ -417,6 +427,27 @@
   <section class="view" id="view-favs">
     <div class="watch-head"><h2>⭐ Favorites</h2><span class="count" id="favsTotal"></span></div>
     <div id="favsList"></div>
+  </section>
+  <section class="view" id="view-qr">
+    <div class="command-bar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A97BE" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="qrSearch" placeholder="Search quick references…" autocomplete="off" style="padding:16px 18px 16px 50px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-family:Archivo;font-weight:900;font-size:22px;margin:0">📌 Quick Reference</h2>
+      <button class="ghost" id="qrNewBtn" style="padding:10px 16px">+ Add note</button>
+    </div>
+    <!-- Add/edit form (hidden by default) -->
+    <div id="qrForm" style="display:none;margin-bottom:20px" class="panel">
+      <label>Title</label>
+      <input type="text" id="qr-title" placeholder="e.g. VPN disconnects after 8 hours">
+      <label>Note</label>
+      <textarea id="qr-body" style="min-height:80px" placeholder="That's by design — user just reconnects. Not a bug."></textarea>
+      <label>Category <span>(optional)</span></label>
+      <select class="field-select" id="qr-category"><option value="">— none —</option><option>Accounts & Passwords</option><option>Microsoft 365</option><option>Outlook</option><option>Teams</option><option>SharePoint</option><option>OneDrive</option><option>Mimecast</option><option>SSO Groups</option><option>Software & Apps</option><option>Networking & VPN</option><option>Hardware & Printers</option><option>Phones & Mobile</option><option>Security</option><option>Onboarding & Offboarding</option><option>Other</option></select>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="cta" id="qrSaveBtn" style="flex:1">Save note</button>
+        <button class="ghost" id="qrCancelBtn">Cancel</button>
+      </div>
+    </div>
+    <div id="qrList"></div>
   </section>
 </div>
 
@@ -595,7 +626,7 @@ async function postComment(ticketId,c){
 async function load(){
   myName=lsGet('tf:name')||'';myColor=lsGet('tf:color')||'';updateUserUI();
   apiKey=lsGet('tf:apikey')||'';reflectKeyState();
-  await checkDB();await loadTeamUsers();await loadTickets();
+  await checkDB();await loadTeamUsers();await loadTickets();await loadQuickRefs();
   if(!myName)setTimeout(showWelcome,600);
   if(useDB)setInterval(async()=>{
     // Don't refresh if user is typing in a comment box
@@ -759,6 +790,62 @@ function findRelated(ids){if(!ids?.length)return[];return ids.map(id=>playbooks.
 
 // === FAVORITES ===
 let favIds=JSON.parse(lsGet('tf:favs')||'[]');
+
+// === QUICK REFERENCE ===
+let quickrefs=[],qrQuery="",qrEditingId=null;
+async function loadQuickRefs(){
+  if(useDB){try{const r=await fetch(API+'/quickrefs');quickrefs=await r.json();}catch{quickrefs=[];}}
+  else{try{quickrefs=JSON.parse(lsGet('tf:quickrefs')||'[]');}catch{quickrefs=[];}}
+  renderQR();
+}
+function renderQR(){
+  const q=qrQuery.trim().toLowerCase();
+  let shown=quickrefs;
+  if(q)shown=quickrefs.filter(r=>[r.title,r.body,r.category,r.author].join(" ").toLowerCase().includes(q));
+  $("#qrCount").textContent=quickrefs.length;
+  if(!shown.length){
+    $("#qrList").innerHTML='<div class="empty"><div class="big">'+(q?"No matches":"No notes yet")+'</div><p>'+(q?"Try different words.":"Add your first quick reference note.")+'</p></div>';
+    return;
+  }
+  $("#qrList").innerHTML=shown.map(r=>{
+    const isAuthor=myName&&r.author&&myName.toLowerCase()===r.author.toLowerCase();
+    const cat=r.category?'<span class="qr-card-cat">'+esc(r.category)+'</span>':"";
+    const tools=isAuthor?'<div class="qr-card-tools"><button class="mini" data-qredit="'+r.id+'">Edit</button><button class="mini del" data-qrdel="'+r.id+'">Delete</button></div>':"";
+    return'<div class="qr-card"><div class="qr-card-title">📌 '+esc(r.title)+'</div><div class="qr-card-body">'+esc(r.body)+'</div><div class="qr-card-meta">'+cat+'<span style="color:'+getColorForUser(r.author)+'">by '+esc(r.author||"?")+'</span><span>'+new Date(r.createdAt).toLocaleDateString()+'</span></div>'+tools+'</div>';
+  }).join("");
+}
+function showQRForm(r){
+  qrEditingId=r?r.id:null;
+  $("#qr-title").value=r?r.title:"";
+  $("#qr-body").value=r?r.body:"";
+  $("#qr-category").value=r?r.category||"":"";
+  $("#qrForm").style.display="block";
+  $("#qrSaveBtn").textContent=r?"Update note":"Save note";
+  $("#qr-title").focus();
+}
+function hideQRForm(){qrEditingId=null;$("#qrForm").style.display="none";$("#qr-title").value="";$("#qr-body").value="";$("#qr-category").value="";}
+async function saveQR(){
+  const name=requireName();if(!name)return;
+  const title=$("#qr-title").value.trim();
+  const body=$("#qr-body").value.trim();
+  if(!title){toast("Give your note a title.","err");return;}
+  const cat=$("#qr-category").value;
+  const now=Date.now();
+  if(qrEditingId){
+    if(useDB){await fetch(API+'/quickrefs/'+qrEditingId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,body,category:cat})});}
+    else{const r=quickrefs.find(x=>x.id===qrEditingId);if(r){r.title=title;r.body=body;r.category=cat;r.updatedAt=now;}lsSet('tf:quickrefs',JSON.stringify(quickrefs));}
+  }else{
+    const nr={id:uid(),title,body,category:cat,author:name,createdAt:now,updatedAt:now};
+    if(useDB){await fetch(API+'/quickrefs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(nr)});}
+    else{quickrefs.unshift(nr);lsSet('tf:quickrefs',JSON.stringify(quickrefs));}
+  }
+  hideQRForm();await loadQuickRefs();toast("Note saved ✓");
+}
+async function deleteQR(id){
+  if(useDB){await fetch(API+'/quickrefs/'+id,{method:'DELETE'});}
+  else{quickrefs=quickrefs.filter(x=>x.id!==id);lsSet('tf:quickrefs',JSON.stringify(quickrefs));}
+  await loadQuickRefs();
+}
 function isFav(id){return favIds.includes(id);}
 function toggleFav(id){
   if(isFav(id)){favIds=favIds.filter(x=>x!==id);}
@@ -843,7 +930,7 @@ const editBtns=isAuthor?'<button class="mini" data-edit="'+p.id+'">Edit</button>
 const favBtn='<button class="mini'+(isFav(p.id)?' verify-btn':'')+'" data-fav="'+p.id+'">'+(isFav(p.id)?'⭐ Favorited':'☆ Favorite')+'</button>';
 const followBtn=(p.steps||[]).length?'<button class="mini" data-follow="'+p.id+'" style="color:var(--beacon);border-color:rgba(61,169,252,.3)">▶ Follow Along</button>':'';
 return'<article class="dossier'+open+'" data-id="'+p.id+'"><div class="doss-head" data-toggle="'+p.id+'"><div class="num" style="background:'+getColorForUser(p.author)+'">'+gNum+'</div><div class="doss-title"><h3>'+hl(p.title,q)+(p.aiCleaned?'<span class="ai-pill">AI</span>':'')+'</h3>'+(p.summary?'<p class="summary">'+hl(p.summary,q)+'</p>':'')+'<div class="tags">'+helpfulBadge(p)+' '+catTag+' '+attachBadge+' '+tags+'</div><div class="meta"><span>'+(p.steps||[]).length+((p.steps||[]).length===1?' step':' steps')+'</span>'+est+by+cc+'<span>'+dt+'</span></div></div><div class="caret">▶</div></div><div class="body">'+listBlock("Tools",p.tools)+listBlock("Prerequisites",p.prerequisites)+stepsH+warnH+renderAttachBlock(p)+relH+renderComments(p)+'<div class="doss-tools">'+favBtn+followBtn+'<button class="mini" data-copy="'+p.id+'">Copy steps</button>'+helpfulBtn+editBtns+'</div></div></article>';}).join("");}
-function setView(v){view=v;["create","browse","mine","favs"].forEach(n=>{$("#view-"+n).classList.toggle("active",v===n);$("#tab-"+n).classList.toggle("active",v===n);});window.scrollTo({top:0,behavior:"smooth"});if(v==="mine")renderMine();if(v==="favs")renderFavs();}
+function setView(v){view=v;["create","browse","mine","favs","qr"].forEach(n=>{$("#view-"+n)?.classList.toggle("active",v===n);$("#tab-"+n)?.classList.toggle("active",v===n);});window.scrollTo({top:0,behavior:"smooth"});if(v==="mine")renderMine();if(v==="favs")renderFavs();if(v==="qr")renderQR();}
 function render(){const q=query.trim();let f=playbooks.filter(p=>matches(p,q));const shown=sortTickets(f);
 $("#count").textContent=playbooks.length+(playbooks.length===1?" guide":" guides");$("#tabCount").textContent=playbooks.length;
 const mine=myName?playbooks.filter(p=>p.author&&p.author.toLowerCase()===myName.toLowerCase()):[];$("#mineCount").textContent=mine.length;
@@ -1071,6 +1158,18 @@ $("#favsList").addEventListener("click",handleListClick);
 $("#favsList").addEventListener("keydown",handleListKeydown);
 // Follow Along modal
 $("#followClose").addEventListener("click",closeFollow);
+
+// Quick Reference events
+$("#qrSearch").addEventListener("input",e=>{qrQuery=e.target.value;renderQR();});
+$("#qrNewBtn").addEventListener("click",()=>showQRForm(null));
+$("#qrSaveBtn").addEventListener("click",saveQR);
+$("#qrCancelBtn").addEventListener("click",hideQRForm);
+$("#qrList").addEventListener("click",e=>{
+  const ed=e.target.closest("[data-qredit]");
+  if(ed){const r=quickrefs.find(x=>x.id===ed.dataset.qredit);if(r)showQRForm(r);return;}
+  const dl=e.target.closest("[data-qrdel]");
+  if(dl){if(confirm("Delete this note?"))deleteQR(dl.dataset.qrdel);return;}
+});
 $("#followModal").addEventListener("click",e=>{if(e.target===$("#followModal"))closeFollow();});
 $("#followPrev").addEventListener("click",()=>{if(followIdx>0){followIdx--;renderFollowStep();}});
 $("#followNext").addEventListener("click",()=>{if(followIdx<followSteps.length-1){followIdx++;renderFollowStep();}else closeFollow();});
