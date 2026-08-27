@@ -300,7 +300,7 @@
     <button class="modal-skip" id="modal-skip">Skip for now</button>
   </div>
 </div>
-<div class="wrap">
+<div class="wrap" id="mainApp" style="display:none">
   <header class="hq-bar">
     <div class="brand">
       <div class="wordmark">TASK<span>FORCE</span></div>
@@ -490,7 +490,7 @@
 <script>
 // ===== CONFIG =====
 const API=window.location.origin+'/api';
-let authToken=lsGet('tf:authtoken')||'';
+let authToken='';
 
 // Authenticated fetch wrapper — adds token to all API calls
 function apiFetch(url,opts={}){
@@ -653,14 +653,14 @@ async function load(){
   try{
     const ar=await fetch(API+'/auth-required');
     const ad=await ar.json();
-    if(ad.required){
-      // Try stored token
-      if(authToken){
-        const check=await fetch(API+'/status',{headers:{'x-access-token':authToken}});
-        if(check.status===401){authToken='';lsSet('tf:authtoken','');showAuthGate();return;}
-      }else{showAuthGate();return;}
+    if(ad.required && !authToken){
+      showAuthGate();
+      return;
     }
   }catch(e){/* server not reachable, continue anyway */}
+
+  // Auth passed — show the app
+  $("#mainApp").style.display="block";
 
   myName=lsGet('tf:name')||'';myColor=lsGet('tf:color')||'';updateUserUI();
   apiKey=lsGet('tf:apikey')||'';reflectKeyState();
@@ -673,7 +673,7 @@ async function load(){
   },15000);
 }
 
-function showAuthGate(){$("#authGate").style.display="flex";}
+function showAuthGate(){$("#mainApp").style.display="none";$("#authGate").style.display="flex";}
 function hideAuthGate(){$("#authGate").style.display="none";}
 async function submitAuth(){
   const code=$("#auth-code").value.trim();
@@ -681,7 +681,7 @@ async function submitAuth(){
   try{
     const r=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
     const d=await r.json();
-    if(d.valid){authToken=d.token||'';lsSet('tf:authtoken',authToken);hideAuthGate();load();}
+    if(d.valid){authToken=d.token||'';hideAuthGate();load();}
     else{$("#authError").textContent=d.error||"Wrong code.";$("#authError").style.display="block";$("#auth-code").value="";}
   }catch(e){$("#authError").textContent="Couldn't reach the server.";$("#authError").style.display="block";}
 }
