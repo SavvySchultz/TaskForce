@@ -275,6 +275,19 @@
 </style>
 </head>
 <body>
+<!-- Access code gate -->
+<div class="modal-overlay" id="authGate" style="display:none">
+  <div class="modal">
+    <h2>🔒 TaskForce</h2>
+    <p class="sub">Enter the team access code to continue.</p>
+    <label>Access code</label>
+    <input type="password" id="auth-code" placeholder="Enter code…" autocomplete="off">
+    <div id="authError" style="color:var(--signal);font-size:13px;margin-top:8px;text-align:center;display:none"></div>
+    <button class="modal-cta" id="auth-submit">Enter</button>
+  </div>
+</div>
+
+<!-- Welcome modal -->
 <div class="modal-overlay hidden" id="welcomeModal">
   <div class="modal">
     <h2><span class="wave">👋</span> Welcome to TaskForce</h2>
@@ -477,6 +490,16 @@
 <script>
 // ===== CONFIG =====
 const API=window.location.origin+'/api';
+let authToken=lsGet('tf:authtoken')||'';
+
+// Authenticated fetch wrapper — adds token to all API calls
+function apiFetch(url,opts={}){
+  if(authToken){
+    opts.headers=opts.headers||{};
+    opts.headers['x-access-token']=authToken;
+  }
+  return fetch(url,opts);
+}
 let playbooks=[],query="",editingId=null,myName="",apiKey="",view="browse";
 let openIds=new Set(),sortMode="newest";
 let browseMode="list",openFolderCat=null;
@@ -558,7 +581,7 @@ let myColor='',teamUsers=[],selectedColor='';
 
 async function loadTeamUsers(){
   if(!useDB)return;
-  try{const r=await fetch(API+'/users');teamUsers=await r.json();}catch{teamUsers=[];}
+  try{const r=await apiFetch(API+'/users');teamUsers=await r.json();}catch{teamUsers=[];}
 }
 function getColorForUser(name){
   if(!name)return'var(--gold)';
@@ -580,7 +603,7 @@ function renderColorGrid(){
 async function claimColor(color){
   if(!myName)return;
   if(useDB){
-    try{const r=await fetch(API+'/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:myName,color})});
+    try{const r=await apiFetch(API+'/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:myName,color})});
     const d=await r.json();if(d.error){toast(d.error,"err");return false;}}catch(e){toast("Couldn't save color: "+e.message,"err");return false;}
   }
   myColor=color;lsSet('tf:color',color);updateUserUI();return true;
@@ -593,49 +616,74 @@ function lsSet(k,v){try{localStorage.setItem(k,v)}catch{}}
 // ===== DATABASE =====
 async function checkDB(){
   const pill=$("#dbPill");
-  try{const r=await fetch(API+'/status');const d=await r.json();
+  try{const r=await apiFetch(API+'/status');const d=await r.json();
     if(d.db){useDB=true;pill.textContent="● Team database connected";pill.className="db-pill on";}
     else{useDB=false;pill.textContent="● Local only (DB offline)";pill.className="db-pill err";}
   }catch{useDB=false;pill.textContent="● Local only";pill.className="db-pill";}
 }
 async function loadTickets(){
-  if(useDB){try{const r=await fetch(API+'/tickets');playbooks=await r.json();render();return;}catch(e){toast("Couldn't load tickets: "+e.message,"err");}}
+  if(useDB){try{const r=await apiFetch(API+'/tickets');playbooks=await r.json();render();return;}catch(e){toast("Couldn't load tickets: "+e.message,"err");}}
   // fallback to localStorage
   try{playbooks=JSON.parse(lsGet('taskforce:local')||'[]');}catch{playbooks=[];}render();
 }
 async function saveTicket(t){
-  if(useDB){const r=await fetch(API+'/tickets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(t)});const d=await r.json();if(d.error)throw new Error(d.error);t.id=d.id||t.id;return t;}
+  if(useDB){const r=await apiFetch(API+'/tickets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(t)});const d=await r.json();if(d.error)throw new Error(d.error);t.id=d.id||t.id;return t;}
   t.id=t.id||uid();playbooks.unshift(t);lsSet('taskforce:local',JSON.stringify(playbooks));return t;
 }
 async function updateTicketAPI(id,t){
-  if(useDB){const r=await fetch(API+'/tickets/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(t)});const d=await r.json();if(d.error)throw new Error(d.error);return;}
+  if(useDB){const r=await apiFetch(API+'/tickets/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(t)});const d=await r.json();if(d.error)throw new Error(d.error);return;}
   const i=playbooks.findIndex(p=>p.id===id);if(i>-1)playbooks[i]=t;lsSet('taskforce:local',JSON.stringify(playbooks));
 }
 async function patchTicket(id,fields){
-  if(useDB){await fetch(API+'/tickets/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});return;}
+  if(useDB){await apiFetch(API+'/tickets/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(fields)});return;}
   const p=playbooks.find(x=>x.id===id);if(p)Object.assign(p,fields);lsSet('taskforce:local',JSON.stringify(playbooks));
 }
 async function deleteTicket(id){
-  if(useDB){await fetch(API+'/tickets/'+id,{method:'DELETE'});await loadTickets();return;}
+  if(useDB){await apiFetch(API+'/tickets/'+id,{method:'DELETE'});await loadTickets();return;}
   playbooks=playbooks.filter(x=>x.id!==id);lsSet('taskforce:local',JSON.stringify(playbooks));render();
 }
 async function postComment(ticketId,c){
-  if(useDB){await fetch(API+'/tickets/'+ticketId+'/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(c)});await loadTickets();return;}
+  if(useDB){await apiFetch(API+'/tickets/'+ticketId+'/comments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(c)});await loadTickets();return;}
   const p=playbooks.find(x=>x.id===ticketId);if(p){p.comments=p.comments||[];p.comments.push(c);p.updatedAt=Date.now();lsSet('taskforce:local',JSON.stringify(playbooks));render();}
 }
 
 // ===== INIT =====
 async function load(){
+  // Check if access code is required
+  try{
+    const ar=await fetch(API+'/auth-required');
+    const ad=await ar.json();
+    if(ad.required){
+      // Try stored token
+      if(authToken){
+        const check=await fetch(API+'/status',{headers:{'x-access-token':authToken}});
+        if(check.status===401){authToken='';lsSet('tf:authtoken','');showAuthGate();return;}
+      }else{showAuthGate();return;}
+    }
+  }catch(e){/* server not reachable, continue anyway */}
+
   myName=lsGet('tf:name')||'';myColor=lsGet('tf:color')||'';updateUserUI();
   apiKey=lsGet('tf:apikey')||'';reflectKeyState();
   await checkDB();await loadTeamUsers();await loadTickets();await loadQuickRefs();
   if(!myName)setTimeout(showWelcome,600);
   if(useDB)setInterval(async()=>{
-    // Don't refresh if user is typing in a comment box
     const active=document.activeElement;
     if(active&&active.classList.contains("cinput"))return;
     await loadTeamUsers();await loadTickets();
   },15000);
+}
+
+function showAuthGate(){$("#authGate").style.display="flex";}
+function hideAuthGate(){$("#authGate").style.display="none";}
+async function submitAuth(){
+  const code=$("#auth-code").value.trim();
+  if(!code){$("#authError").textContent="Enter the access code.";$("#authError").style.display="block";return;}
+  try{
+    const r=await fetch(API+'/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+    const d=await r.json();
+    if(d.valid){authToken=d.token||'';lsSet('tf:authtoken',authToken);hideAuthGate();load();}
+    else{$("#authError").textContent=d.error||"Wrong code.";$("#authError").style.display="block";$("#auth-code").value="";}
+  }catch(e){$("#authError").textContent="Couldn't reach the server.";$("#authError").style.display="block";}
 }
 function saveName(n){myName=n;lsSet('tf:name',n);updateUserUI();}
 function reflectKeyState(){const el=$("#keyState");if(apiKey){el.innerHTML='Key saved ✓ · <a id="rmKey">remove</a>';$("#saKeybox").style.display="none";document.getElementById("rmKey")?.addEventListener("click",()=>{apiKey="";localStorage.removeItem('tf:apikey');reflectKeyState();});}else{el.textContent="No key set.";try{$("#saKeybox").style.display="block";}catch(e){}}}
@@ -797,7 +845,7 @@ let favIds=JSON.parse(lsGet('tf:favs')||'[]');
 let quickrefs=[],qrQuery="",qrEditingId=null;
 let favsQuery="",mineQuery="";
 async function loadQuickRefs(){
-  if(useDB){try{const r=await fetch(API+'/quickrefs');quickrefs=await r.json();}catch{quickrefs=[];}}
+  if(useDB){try{const r=await apiFetch(API+'/quickrefs');quickrefs=await r.json();}catch{quickrefs=[];}}
   else{try{quickrefs=JSON.parse(lsGet('tf:quickrefs')||'[]');}catch{quickrefs=[];}}
   renderQR();
 }
@@ -835,17 +883,17 @@ async function saveQR(){
   const cat=$("#qr-category").value;
   const now=Date.now();
   if(qrEditingId){
-    if(useDB){await fetch(API+'/quickrefs/'+qrEditingId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,body,category:cat})});}
+    if(useDB){await apiFetch(API+'/quickrefs/'+qrEditingId,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,body,category:cat})});}
     else{const r=quickrefs.find(x=>x.id===qrEditingId);if(r){r.title=title;r.body=body;r.category=cat;r.updatedAt=now;}lsSet('tf:quickrefs',JSON.stringify(quickrefs));}
   }else{
     const nr={id:uid(),title,body,category:cat,author:name,createdAt:now,updatedAt:now};
-    if(useDB){await fetch(API+'/quickrefs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(nr)});}
+    if(useDB){await apiFetch(API+'/quickrefs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(nr)});}
     else{quickrefs.unshift(nr);lsSet('tf:quickrefs',JSON.stringify(quickrefs));}
   }
   hideQRForm();await loadQuickRefs();toast("Note saved ✓");
 }
 async function deleteQR(id){
-  if(useDB){await fetch(API+'/quickrefs/'+id,{method:'DELETE'});}
+  if(useDB){await apiFetch(API+'/quickrefs/'+id,{method:'DELETE'});}
   else{quickrefs=quickrefs.filter(x=>x.id!==id);lsSet('tf:quickrefs',JSON.stringify(quickrefs));}
   await loadQuickRefs();
 }
@@ -1118,7 +1166,7 @@ const cancel=document.createElement("button");cancel.className="cmt-reply-btn";c
 cmtDel.after(cancel);
 cancel.onclick=(ev)=>{ev.stopPropagation();cmtDel.textContent=origText;cmtDel.style.color="var(--signal)";cmtDel.style.background="none";cmtDel.style.borderRadius="";cmtDel.style.padding="2px 6px";delete cmtDel.dataset.confirming;cancel.remove();};
 cmtDel.onclick=(ev)=>{ev.stopPropagation();
-if(useDB){fetch(API+'/tickets/'+tid+'/comments/'+cid,{method:'DELETE'}).then(r=>{if(!r.ok)throw new Error("Server error");return loadTickets();}).catch(er=>toast("Couldn't delete: "+er.message,"err"));}
+if(useDB){apiFetch(API+'/tickets/'+tid+'/comments/'+cid,{method:'DELETE'}).then(r=>{if(!r.ok)throw new Error("Server error");return loadTickets();}).catch(er=>toast("Couldn't delete: "+er.message,"err"));}
 else{const p=playbooks.find(x=>x.id===tid);if(p){p.comments=(p.comments||[]).filter(c=>c.id!==cid);lsSet('taskforce:local',JSON.stringify(playbooks));render();}}};
 return;}
 const cmtEdit=e.target.closest("[data-cmtedit]");if(cmtEdit){const cid=cmtEdit.dataset.cmtedit,tid=cmtEdit.dataset.cmtticket;
@@ -1128,7 +1176,7 @@ const oldText=txtEl.textContent;
 txtEl.innerHTML='<div style="display:flex;gap:6px;align-items:center"><input type="text" class="cinput" value="'+esc(oldText)+'" style="flex:1;font-size:13px;padding:6px 8px" id="cmtedit-'+cid+'"><button class="mini" id="cmtsave-'+cid+'" style="padding:5px 10px">Save</button><button class="mini" id="cmtcancel-'+cid+'" style="padding:5px 10px">Cancel</button></div>';
 const inp2=document.getElementById("cmtedit-"+cid);inp2.focus();inp2.setSelectionRange(inp2.value.length,inp2.value.length);
 document.getElementById("cmtsave-"+cid).onclick=()=>{const newText=inp2.value.trim();if(!newText)return;
-if(useDB){fetch(API+'/tickets/'+tid+'/comments/'+cid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:newText})}).then(()=>loadTickets());}
+if(useDB){apiFetch(API+'/tickets/'+tid+'/comments/'+cid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:newText})}).then(()=>loadTickets());}
 else{const p=playbooks.find(x=>x.id===tid);if(p){const cm=(p.comments||[]).find(c=>c.id===cid);if(cm)cm.text=newText;lsSet('taskforce:local',JSON.stringify(playbooks));render();}}};
 document.getElementById("cmtcancel-"+cid).onclick=()=>{txtEl.textContent=oldText;};
 inp2.addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();document.getElementById("cmtsave-"+cid).click();}if(ev.key==="Escape")document.getElementById("cmtcancel-"+cid).click();});
@@ -1141,7 +1189,7 @@ const tg=e.target.closest("[data-toggle]");if(tg){const id=tg.dataset.toggle;if(
 const fv=e.target.closest("[data-fav]");if(fv){toggleFav(fv.dataset.fav);return;}
 const fw=e.target.closest("[data-follow]");if(fw){openFollow(fw.dataset.follow);return;}
 const hf=e.target.closest("[data-helpful]");if(hf){const name=requireName();if(!name)return;const id=hf.dataset.helpful;
-if(useDB){fetch(API+'/tickets/'+id+'/helpful',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}).then(r=>r.json()).then(d=>{if(d.error){toast(d.error==='Already voted'?'You already marked this as helpful.':d.error,"err");}else{hf.textContent="👍 Thanks!";hf.disabled=true;setTimeout(()=>loadTickets(),800);}}).catch(e=>toast("Error: "+e.message,"err"));}
+if(useDB){apiFetch(API+'/tickets/'+id+'/helpful',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})}).then(r=>r.json()).then(d=>{if(d.error){toast(d.error==='Already voted'?'You already marked this as helpful.':d.error,"err");}else{hf.textContent="👍 Thanks!";hf.disabled=true;setTimeout(()=>loadTickets(),800);}}).catch(e=>toast("Error: "+e.message,"err"));}
 else{const p=playbooks.find(x=>x.id===id);if(p){p.helpfulBy=p.helpfulBy||[];if(p.helpfulBy.map(n=>n.toLowerCase()).includes(name.toLowerCase())){toast("You already marked this as helpful.","err");return;}p.helpfulBy.push(name);p.helpful=p.helpfulBy.length;hf.textContent="👍 Thanks!";hf.disabled=true;lsSet('taskforce:local',JSON.stringify(playbooks));setTimeout(()=>render(),800);}}return;}
 const cp=e.target.closest("[data-copy]");if(cp){const p=playbooks.find(x=>x.id===cp.dataset.copy);if(p){let t=p.title+"\n";if(p.steps?.length)t+="\n"+p.steps.map((s,i)=>(i+1)+". "+s).join("\n");navigator.clipboard.writeText(t.trim());patchTicket(p.id,{copies:(p.copies||0)+1});const b=cp;b.textContent="Copied ✓";setTimeout(()=>b.textContent="Copy steps",1400);}return;}
 const ed=e.target.closest("[data-edit]");if(ed){startEdit(ed.dataset.edit);return;}
@@ -1181,6 +1229,10 @@ $("#followModal").addEventListener("click",e=>{if(e.target===$("#followModal"))c
 $("#followPrev").addEventListener("click",()=>{if(followIdx>0){followIdx--;renderFollowStep();}});
 $("#followNext").addEventListener("click",()=>{if(followIdx<followSteps.length-1){followIdx++;renderFollowStep();}else closeFollow();});
 document.addEventListener("keydown",e=>{if($("#followModal").classList.contains("hidden"))return;if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();if(followIdx<followSteps.length-1){followIdx++;renderFollowStep();}else closeFollow();}if(e.key==="ArrowLeft"){e.preventDefault();if(followIdx>0){followIdx--;renderFollowStep();}}if(e.key==="Escape")closeFollow();});
+
+// Auth gate events
+$("#auth-submit").addEventListener("click",submitAuth);
+$("#auth-code").addEventListener("keydown",e=>{if(e.key==="Enter")submitAuth();});
 
 load();
 </script>
