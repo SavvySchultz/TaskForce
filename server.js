@@ -2,11 +2,89 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const path = require('path');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 
 const app = express();
+
+// ===== LAYER 4: Security headers =====
+app.use(helmet({
+  contentSecurityPolicy: false, // allow inline styles/scripts for our SPA
+  crossOriginEmbedderPolicy: false
+}));
+
+// ===== LAYER 2: Rate limiting =====
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // max 300 requests per 15 min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — slow down and try again in a few minutes.' }
+});
+app.use('/api/', apiLimiter);
+
+// Stricter limit for auth attempts
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15, // only 15 auth attempts per 15 min
+  message: { error: 'Too many attempts. Try again later.' }
+});
+
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '10mb' })); // reduced from 50mb
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ===== LAYER 1: Access code authentication =====
+// Set ACCESS_CODE in Reactor environment variables
+const ACCESS_CODE = process.env.ACCESS_CODE || '';
+const ACCESS_TOKEN = ACCESS_CODE ? crypto.createHash('sha256').update(ACCESS_CODE).digest('hex') : '';
+
+// Auth endpoint
+app.post('/api/auth', authLimiter, (req, res) => {
+  if (!ACCESS_CODE) return res.json({ valid: true, token: '' }); // no code set = open
+  const { code } = req.body;
+  if (!code || code.trim() !== ACCESS_CODE) {
+    return res.status(401).json({ valid: false, error: 'Wrong access code.' });
+  }
+  res.json({ valid: true, token: ACCESS_TOKEN });
+});
+
+// Check if auth is required
+app.get('/api/auth-required', (req, res) => {
+  res.json({ required: !!ACCESS_CODE });
+});
+
+// Auth middleware — protect all /api routes except auth endpoints and health
+app.use('/api', (req, res, next) => {
+  if (req.path === '/auth' || req.path === '/auth-required' || req.path === '/status') return next();
+  if (!ACCESS_CODE) return next(); // no code set = open access
+  const token = req.headers['x-access-token'] || '';
+  if (token !== ACCESS_TOKEN) {
+    return res.status(401).json({ error: 'Unauthorized — access code required.' });
+  }
+  next();
+});
+
+// ===== LAYER 3: Input validation middleware =====
+app.use('/api', (req, res, next) => {
+  if (req.method === 'POST' || req.method === 'PUT') {
+    const body = req.body;
+    if (body) {
+      // Title length limit
+      if (body.title && body.title.length > 500) return res.status(400).json({ error: 'Title too long (max 500 characters).' });
+      // Body/notes length limit
+      if (body.rawNotes && body.rawNotes.length > 50000) return res.status(400).json({ error: 'Notes too long (max 50,000 characters).' });
+      if (body.body && body.body.length > 10000) return res.status(400).json({ error: 'Note body too long (max 10,000 characters).' });
+      // Comment text limit
+      if (body.text && body.text.length > 5000) return res.status(400).json({ error: 'Comment too long (max 5,000 characters).' });
+      // Name limit
+      if (body.name && body.name.length > 200) return res.status(400).json({ error: 'Name too long.' });
+      if (body.author && body.author.length > 200) return res.status(400).json({ error: 'Author name too long.' });
+    }
+  }
+  next();
+});
 
 // --- Database connection ---
 // Reactor injects DB credentials as environment variables.
